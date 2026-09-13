@@ -1,0 +1,14 @@
+build/
+tools/
+compile_commands.json
+__pycache__/
+.DS_Store
+*.out
+
+# Track only authored files under projects/; course material is fetched (see README).
+projects/**
+!projects/**/
+!projects/**/*.hdl
+!projects/04/**/*.asm
+!projects/12/*.jack
+# Add a project 9 program explicitly, e.g. !projects/09/MyGame/**
