@@ -39,5 +39,41 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    And(a=instruction[15], b=instruction[4], out=loadDreg);
+    DRegister(in=outALU, load=loadDreg, out=outRegD);
+
+    Mux16(a=instruction, b=outALU, sel=instruction[15], out=regA);
+    Not(in=instruction[15], out=notInst15);
+    Or(a=instruction[5], b=notInst15, out=loadRegA);
+    ARegister(in=regA, load=loadRegA, out=outRegA, out[0..14]=addressM);
+
+    And(a=instruction[12], b=instruction[15], out=inMorA);
+    Mux16(a=outRegA, b=inM, sel=inMorA, out=inputALU);
+
+    // control bits
+    Mux(a=false, b=instruction[6], sel=instruction[15], out=toNo);
+    Mux(a=false, b=instruction[7], sel=instruction[15], out=toF);
+    Mux(a=false, b=instruction[8], sel=instruction[15], out=toNY);
+    Mux(a=false, b=instruction[9], sel=instruction[15], out=toZY);
+    Mux(a=true, b=instruction[10], sel=instruction[15], out=toNX); 
+    Mux(a=true, b=instruction[11], sel=instruction[15], out=toZX);   
+    
+    ALU(
+        x=outRegD, y=inputALU, zx=toZX, nx=toNX, zy=toZY, ny=toNY, f=toF, no=toNo, 
+        out=outALU, out=outM, zr=isZero, ng=isNegative);
+
+    // writeM
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // PC
+    Not(in=isZero, out=notIsZero);
+    Not(in=isNegative, out=notIsNegative);
+    And(a=notIsZero, b=notIsNegative, out=isPositive);
+    And(a=instruction[0], b=isPositive, out=pos);
+    And(a=instruction[1], b=isZero, out=zero);
+    And(a=instruction[2], b=isNegative, out=nega);
+    Or(a=zero, b=pos, out=zeroOrPos);
+    Or(a=zeroOrPos, b=nega, out=isLoadPC);
+    And(a=instruction[15], b=isLoadPC, out=loadPC);
+    PC(in=outRegA, load=loadPC, inc=true, reset=reset, out[0..14]=pc);
 }
