@@ -2,7 +2,9 @@
 """Run nand2tetris .tst scripts through the Java tool suite and report pass/fail."""
 
 import argparse
+import os
 import re
+import signal
 import subprocess
 import sys
 from collections import OrderedDict
@@ -15,6 +17,7 @@ PROJECTS_DIR = REPO_ROOT / "projects"
 SUCCESS_MARKER = "End of script - Comparison ended successfully"
 LOAD_DIRECTIVE = re.compile(r"^\s*load\s*([^,;\s]*)\s*[,;]")
 COMPARE_DIRECTIVE = re.compile(r"^\s*compare-to\s", re.IGNORECASE)
+WHILE_DIRECTIVE = re.compile(r"^\s*while\s", re.IGNORECASE)
 BLOCK_COMMENT = re.compile(r"/\*.*?\*/", re.DOTALL)
 
 TOOL_BY_SUFFIX = {
@@ -46,26 +49,46 @@ def has_comparison(lines: list[str]) -> bool:
     return any(COMPARE_DIRECTIVE.match(line) for line in lines)
 
 
+def waits_for_input(lines: list[str]) -> bool:
+    """True when the script loops on a condition only GUI input can satisfy."""
+    return any(WHILE_DIRECTIVE.match(line) for line in lines)
+
+
+def kill_group(proc: "subprocess.Popen[str]") -> None:
+    """Kill the process group led by proc and reap it."""
+    try:
+        os.killpg(proc.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        proc.kill()
+    proc.communicate()
+
+
 def run_one(tst: Path, timeout: int) -> tuple[str, str]:
     lines = directives(tst)
     if not has_comparison(lines):
         return SKIP, "interactive script, no compare-to"
+    if waits_for_input(lines):
+        return SKIP, "interactive script, waits on the GUI keyboard"
 
     tool = TOOLS_DIR / TOOL_BY_SUFFIX.get(load_suffix(lines), DEFAULT_TOOL)
     if not tool.exists():
         return FAIL, f"missing tool {tool.name}"
+
+    proc = subprocess.Popen(
+        [str(tool), str(tst)],
+        cwd=str(tst.parent),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    )
     try:
-        proc = subprocess.run(
-            [str(tool), str(tst)],
-            cwd=str(tst.parent),
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
+        stdout, stderr = proc.communicate(timeout=timeout)
     except subprocess.TimeoutExpired:
+        kill_group(proc)
         return FAIL, f"timed out after {timeout}s"
 
-    output = proc.stdout + proc.stderr
+    output = stdout + stderr
     if proc.returncode == 0 and SUCCESS_MARKER in output:
         return PASS, tool.name
     detail = " ".join(output.split()) or f"exit {proc.returncode}"
