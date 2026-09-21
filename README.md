@@ -16,12 +16,18 @@ scripts, comparison files, sample programs — and the Java tool suite are fetch
 setup steps below and are not tracked.
 
 ```
-projects/     Authored HDL chips, Hack assembly, and the Jack OS
-src/          C++ sources for projects 6-12
-tests/        GoogleTest suite for the C++ code
-scripts/      run_tst.py - dispatches .tst scripts to the right simulator
-tools/        Official Java tool suite (fetched)
+projects/             Authored HDL chips, Hack assembly, and the Jack OS
+projects/06/assembler Hack assembler: src/, include/, and its GoogleTest suite in tests/
+scripts/              run_tst.py - dispatches .tst scripts to the right simulator
+                      compare_hack.py - diffs an assembler's output against the official one
+tools/                Official Java tool suite (fetched)
 ```
+
+The software projects are built as one CMake project. The top-level `CMakeLists.txt` holds
+only what every project shares — the C++ standard, GoogleTest, and CTest — and adds each
+project directory. A project's `CMakeLists.txt` wires its program to the course material
+(for project 6, the `.asm` acceptance tests), and the program's own `CMakeLists.txt` defines
+only its targets and unit tests.
 
 ## Setup
 
@@ -86,8 +92,9 @@ make test-hw N=01
 | `make build` | Configure and build with the debug preset (ASan + UBSan) |
 | `make test` | Run every project's tests, one summary line per project |
 | `make test-hw N=01` | Run the tests of a single project, with per-test detail |
-| `make test-cpp` | Run the GoogleTest suite |
-| `make fmt` | Run `clang-format` over `src/` and `tests/` |
+| `make test-cpp` | Build and run the GoogleTest unit tests; `F=regex` runs only matching tests |
+| `make test-asm` | Assemble every `.asm` in `projects/06` with `hack_assembler` and diff it against the official Assembler |
+| `make fmt` | Run `clang-format` over the C++ sources under `projects/` |
 | `make compdb` | Symlink `compile_commands.json` to the repo root |
 | `make clean` | Remove the build directory and generated `.out` files |
 
@@ -96,6 +103,12 @@ file: `.hdl` goes to the hardware simulator, `.asm` and `.hack` to the CPU emula
 `.vm` or a bare `load` to the VM emulator. A test counts as passing only when the tool exits
 zero *and* prints `End of script - Comparison ended successfully`. Scripts with no
 `compare-to` directive are interactive and are reported as skipped.
+
+`make test-asm` runs `hack_assembler Prog.asm`, expects it to write `Prog.hack` next to the
+source, and compares the result word by word with what `tools/Assembler.sh` produces. The
+first mismatching ROM addresses are reported with the instruction that produced them. Both
+`make test-cpp` and `make test-asm` go through CTest, so the same tests also appear in the
+VS Code Testing view when the folder is opened with CMake Tools.
 
 For stepping through a chip or watching memory, the browser
 [Web IDE](https://nand2tetris.github.io/web-ide/) runs the same simulators with no install.

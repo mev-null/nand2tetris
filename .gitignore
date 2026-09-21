@@ -11,4 +11,8 @@ projects/**
 !projects/**/*.hdl
 !projects/04/**/*.asm
 !projects/12/*.jack
+!projects/**/CMakeLists.txt
+!projects/**/*.cpp
+!projects/**/*.hpp
 # Add a project 9 program explicitly, e.g. !projects/09/MyGame/**
+projects/**/build/
