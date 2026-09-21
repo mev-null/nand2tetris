@@ -2,6 +2,9 @@
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
     "[cpp]": {
         "editor.defaultFormatter": "ms-vscode.cpptools",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false
     }
 }
