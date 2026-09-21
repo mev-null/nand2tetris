@@ -1,6 +1,8 @@
 add_library(
     assembler_core
-    src/process_line.cpp
+    src/parser.cpp
+    src/code.cpp
+    src/assembler.cpp
 )
 
 target_include_directories(
@@ -20,7 +22,9 @@ target_link_libraries(
 
 add_executable(
     assembler_tests
-    tests/process_line_test.cpp
+    tests/parser_test.cpp
+    tests/code_test.cpp
+    tests/assembler_test.cpp
 )
 
 target_link_libraries(
