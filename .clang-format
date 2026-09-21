@@ -2,3 +2,14 @@ BasedOnStyle: Google
 ColumnLimit: 100
 InsertNewlineAtEOF: true
 AlignArrayOfStructures: Left
+IncludeCategories:
+  - Regex: '^<(gtest|gmock)/'
+    Priority: 3
+  - Regex: '^<ext/.*\.h>'
+    Priority: 2
+  - Regex: '^<.*\.h>'
+    Priority: 1
+  - Regex: '^<.*'
+    Priority: 2
+  - Regex: '.*'
+    Priority: 4
