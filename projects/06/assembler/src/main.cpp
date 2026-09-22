@@ -1,12 +1,18 @@
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "assembler.hpp"
 #include "code.hpp"
 #include "parser.hpp"
+#include "symbol_table.hpp"
+
+bool IsNumber(const std::string& symbol);
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -30,31 +36,63 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  std::string line;
+  SymbolTable symbols;
+  // path 1
+  std::vector<std::string> instructions = LoadInstructions(file, symbols);
 
-  while (std::getline(file, line)) {
-    std::string processed_line = process_line(line);
-    if (!processed_line.empty()) {
-      InstructionType type = instruction_type(processed_line);
-      std::string machine_lang;
-      switch (type) {
-        case InstructionType::A_INSTRUCTION: {
-          machine_lang = encode_a_instruction(processed_line);
+  // path 2
+  size_t cur_address = 0;
+  size_t variable_symbol_address = 16;
+
+  while (cur_address < instructions.size()) {
+    std::string instruction = instructions[cur_address];
+    InstructionType type = instruction_type(instruction);
+    std::string machine_lang;
+    switch (type) {
+      case InstructionType::A_INSTRUCTION: {
+        std::string a_symbol = parse_symbol(instruction);
+        if (symbols.Contains(a_symbol)) {
+          int a_value = symbols.GetAddress(a_symbol);
+          instruction = '@' + std::to_string(a_value);
+        } else if (!IsNumber(a_symbol)) {
+          symbols.AddEntry(a_symbol, variable_symbol_address);
+          instruction = '@' + std::to_string(variable_symbol_address);
+          ++variable_symbol_address;
+        }
+        machine_lang = encode_a_instruction(instruction);
+        ++cur_address;
+        break;
+      }
+      case InstructionType::C_INSTRUCTION: {
+        machine_lang = encode_c_instruction(instruction);
+        ++cur_address;
+        break;
+      }
+      case InstructionType::L_INSTRUCTION: {
+        std::string jump_symbol = parse_symbol(instruction);
+        if (symbols.Contains(jump_symbol)) {
+          cur_address = symbols.GetAddress(jump_symbol);
           break;
-        }
-        case InstructionType::C_INSTRUCTION: {
-          machine_lang = encode_c_instruction(processed_line);
-          break;
-        }
-        case InstructionType::L_INSTRUCTION: {
-          // a label does not occupy a ROM word
-          continue;
-        }
-        default: {
-          throw std::invalid_argument("A instruction value out of range");
+        } else {
+          throw std::invalid_argument("symbol" + jump_symbol + "not found: " + instruction);
         }
       }
+      default: {
+        throw std::invalid_argument("A instruction value out of range");
+      }
+    }
+    if (!machine_lang.empty()) {
       output << machine_lang << '\n';
+    } else {
+      continue;
     }
   }
+}
+
+bool IsNumber(const std::string& symbol) {
+  if (symbol.empty()) {
+    return false;
+  }
+
+  return std::all_of(symbol.begin(), symbol.end(), [](unsigned char c) { return std::isdigit(c); });
 }
