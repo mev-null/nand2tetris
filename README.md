@@ -93,10 +93,11 @@ make test-hw N=01
 | `make test` | Run every project's tests, one summary line per project |
 | `make test-hw N=01` | Run the tests of a single project, with per-test detail |
 | `make test-cpp` | Build and run the GoogleTest unit tests; `F=regex` runs only matching tests |
-| `make test-asm` | Assemble every `.asm` in `projects/06` with `hack_assembler` and diff it against the official Assembler |
+| `make test-asm` | Assemble every `.asm` in `projects/06` with `hack_assembler` and diff it against the official Assembler; `F=regex` runs only matching programs, e.g. `F=Add` |
+| `make asm FILE=projects/06/add/Add.asm` | Build, assemble one `.asm` with `hack_assembler`, print the `.hack` it writes next to the source, and compare it with the official Assembler |
 | `make fmt` | Run `clang-format` over the C++ sources under `projects/` |
 | `make compdb` | Symlink `compile_commands.json` to the repo root |
-| `make clean` | Remove the build directory and generated `.out` files |
+| `make clean` | Remove the build directory, generated `.out` files, and the `.hack` files written under `projects/06` |
 
 `scripts/run_tst.py` picks a simulator from the `load` directive at the top of each `.tst`
 file: `.hdl` goes to the hardware simulator, `.asm` and `.hack` to the CPU emulator, and
