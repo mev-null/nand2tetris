@@ -22,10 +22,11 @@ also where I am learning the language.
 | 10–11 | Compiler | Jack to VM code | not started |
 | 12 | Operating system | The Jack OS libraries | not started |
 
-Each chapter has a directory `projects/NN-<name>` that holds the course's test files next
-to my work. Chapters that build one program share a directory: `07-08-vm-translator`, and
-`10-11-compiler`, which keeps each chapter's course files in `10/` and `11/` because both
-ship a different `Square/`.
+Each chapter has a directory `projects/NN-<name>`, and chapters that build one program
+share it: `07-08-vm-translator` and `10-11-compiler`. From chapter 6 on, the course's test
+programs sit in `course/` next to the implementation; `10-11-compiler/course` splits them
+into `10/` and `11/` because both chapters ship a different `Square/`. The hardware
+chapters keep them next to the `.hdl` files they test.
 
 ## Setup
 

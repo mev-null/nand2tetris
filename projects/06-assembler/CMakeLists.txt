@@ -41,7 +41,7 @@ gtest_discover_tests(assembler_tests)
 # Acceptance: every course program, compared with the official Assembler
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-file(GLOB programs CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*.asm)
+file(GLOB programs CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/course/*/*.asm)
 foreach(program IN LISTS programs)
     cmake_path(GET program STEM name)
     add_test(

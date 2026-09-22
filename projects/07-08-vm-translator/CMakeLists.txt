@@ -8,7 +8,7 @@ add_executable(
 # the translator.
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/*/*/*.tst)
+file(GLOB tests CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/course/*/*/*.tst)
 list(FILTER tests EXCLUDE REGEX "VME\\.tst$")
 foreach(test IN LISTS tests)
     cmake_path(GET test STEM name)

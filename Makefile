@@ -32,7 +32,7 @@ test-asm: build
 
 .PHONY: asm
 asm: build
-	@test -n "$(FILE)" || { echo "usage: make asm FILE=projects/06-assembler/add/Add.asm"; exit 2; }
+	@test -n "$(FILE)" || { echo "usage: make asm FILE=projects/06-assembler/course/add/Add.asm"; exit 2; }
 	$(ASSEMBLER) $(FILE)
 	@cat $(basename $(FILE)).hack
 	@$(PYTHON) scripts/compare_hack.py $(ASSEMBLER) $(FILE)
@@ -43,7 +43,7 @@ test-vm: build
 
 .PHONY: vm
 vm: build
-	@test -n "$(FILE)" || { echo "usage: make vm FILE=projects/07-08-vm-translator/StackArithmetic/SimpleAdd/SimpleAdd.vm"; exit 2; }
+	@test -n "$(FILE)" || { echo "usage: make vm FILE=projects/07-08-vm-translator/course/StackArithmetic/SimpleAdd/SimpleAdd.vm"; exit 2; }
 	@$(PYTHON) scripts/run_vm_test.py --in-place $(VM_TRANSLATOR) $(FILE)
 
 .PHONY: test
