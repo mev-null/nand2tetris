@@ -35,7 +35,7 @@ SymbolTable::SymbolTable() {
 
 void SymbolTable::AddEntry(const std::string& symbol, int address) {
   if (table_.find(symbol) != table_.end()) {
-    throw std::invalid_argument("already exits");
+    throw std::invalid_argument("symbol already exists: " + symbol);
   }
   table_[symbol] = address;
 }
@@ -47,7 +47,7 @@ bool SymbolTable::Contains(const std::string& symbol) const {
 int SymbolTable::GetAddress(const std::string& symbol) const {
   auto it = table_.find(symbol);
   if (it == table_.end()) {
-    throw std::invalid_argument("not find");
+    throw std::invalid_argument("symbol not found: " + symbol);
   }
   return it->second;
 }
