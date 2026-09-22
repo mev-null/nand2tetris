@@ -17,4 +17,4 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
-add_subdirectory(projects/06)
+add_subdirectory(projects/06-assembler)

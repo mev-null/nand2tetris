@@ -10,10 +10,10 @@ __pycache__/
 projects/**
 !projects/**/
 !projects/**/*.hdl
-!projects/04/**/*.asm
-!projects/12/*.jack
+!projects/04-machine-language/**/*.asm
+!projects/12-operating-system/*.jack
 !projects/**/CMakeLists.txt
 !projects/**/*.cpp
 !projects/**/*.hpp
-# Add a project 9 program explicitly, e.g. !projects/09/MyGame/**
+# Add a project 9 program explicitly, e.g. !projects/09-high-level-language/MyGame/**
 projects/**/build/

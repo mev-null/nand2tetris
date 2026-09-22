@@ -9,16 +9,23 @@ also where I am learning the language.
 
 | # | Layer | What is built | Implementation |
 | --- | --- | --- | --- |
-| 01 | Boolean logic | Not, And, Or, Xor, Mux, DMux, and their 16-bit and multi-way forms | [`projects/01`](projects/01) |
-| 02 | Boolean arithmetic | HalfAdder, FullAdder, Add16, Inc16, ALU | [`projects/02`](projects/02) |
-| 03 | Memory | Bit, Register, RAM8 to RAM16K, PC | [`projects/03`](projects/03) |
-| 04 | Machine language | Mult and Fill in Hack assembly | [`projects/04`](projects/04) |
-| 05 | Computer architecture | Memory, CPU, Computer | [`projects/05`](projects/05) |
-| 06 | Assembler | Two-pass Hack assembler with a symbol table | [`projects/06/assembler`](projects/06/assembler) |
+| # | Layer | What is built | Implementation |
+| --- | --- | --- | --- |
+| 01 | Boolean logic | Not, And, Or, Xor, Mux, DMux, and their 16-bit and multi-way forms | [`projects/01-boolean-logic`](projects/01-boolean-logic) |
+| 02 | Boolean arithmetic | HalfAdder, FullAdder, Add16, Inc16, ALU | [`projects/02-boolean-arithmetic`](projects/02-boolean-arithmetic) |
+| 03 | Memory | Bit, Register, RAM8 to RAM16K, PC | [`projects/03-memory`](projects/03-memory) |
+| 04 | Machine language | Mult and Fill in Hack assembly | [`projects/04-machine-language`](projects/04-machine-language) |
+| 05 | Computer architecture | Memory, CPU, Computer | [`projects/05-computer-architecture`](projects/05-computer-architecture) |
+| 06 | Assembler | Two-pass Hack assembler with a symbol table | [`projects/06-assembler`](projects/06-assembler) |
 | 07–08 | VM translator | VM code to Hack assembly | not started |
 | 09 | High-level language | A program in Jack | not started |
 | 10–11 | Compiler | Jack to VM code | not started |
 | 12 | Operating system | The Jack OS libraries | not started |
+
+Each chapter has a directory `projects/NN-<name>` that holds the course's test files next
+to my work. Chapters that build one program share a directory: `07-08-vm-translator`, and
+`10-11-compiler`, which keeps each chapter's course files in `10/` and `11/` because both
+ship a different `Square/`.
 
 ## Setup
 
@@ -35,7 +42,7 @@ echo "f4ea1e104c9296f98d5b3ebd30acc283a876fedcf289f7679ad80885902bebe4  /tmp/n2t
 unzip -q /tmp/n2t.zip -d /tmp/n2t && cp -R /tmp/n2t/nand2tetris/tools . && chmod +x tools/*.sh
 
 git clone --depth 1 https://github.com/nand2tetris/projects.git /tmp/n2t-projects
-cp -Rn /tmp/n2t-projects/projects/. projects/   # -n never overwrites authored files
+scripts/copy_course.sh /tmp/n2t-projects/projects   # never overwrites authored files
 ```
 
 `make test` runs every project's tests, and `make help` lists the other targets.
