@@ -49,5 +49,5 @@ foreach(program IN LISTS programs)
         COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/scripts/compare_hack.py
                 $<TARGET_FILE:hack_assembler> ${program}
     )
-    set_tests_properties(Assemble.${name} PROPERTIES LABELS acceptance)
+    set_tests_properties(Assemble.${name} PROPERTIES LABELS "acceptance;assembler")
 endforeach()

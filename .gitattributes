@@ -1,0 +1,2 @@
+# Keep the test tooling out of GitHub's language statistics
+scripts/** linguist-detectable=false

@@ -17,7 +17,7 @@ also where I am learning the language.
 | 04 | Machine language | Mult and Fill in Hack assembly | [`projects/04-machine-language`](projects/04-machine-language) |
 | 05 | Computer architecture | Memory, CPU, Computer | [`projects/05-computer-architecture`](projects/05-computer-architecture) |
 | 06 | Assembler | Two-pass Hack assembler with a symbol table | [`projects/06-assembler`](projects/06-assembler) |
-| 07–08 | VM translator | VM code to Hack assembly | not started |
+| 07–08 | VM translator | VM code to Hack assembly | [`projects/07-08-vm-translator`](projects/07-08-vm-translator) (in progress) |
 | 09 | High-level language | A program in Jack | not started |
 | 10–11 | Compiler | Jack to VM code | not started |
 | 12 | Operating system | The Jack OS libraries | not started |

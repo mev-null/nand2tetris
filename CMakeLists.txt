@@ -18,3 +18,4 @@ FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
 add_subdirectory(projects/06-assembler)
+add_subdirectory(projects/07-08-vm-translator)

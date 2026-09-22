@@ -1,6 +1,7 @@
 PYTHON := python3
 RUNNER := $(PYTHON) scripts/run_tst.py
 ASSEMBLER := build/debug/projects/06-assembler/hack_assembler
+VM_TRANSLATOR := build/debug/projects/07-08-vm-translator/vm_translator
 
 .PHONY: help
 help:
@@ -10,9 +11,11 @@ help:
 	@echo "make test-cpp       Build and run the GoogleTest unit tests (F=regex to filter)"
 	@echo "make test-asm       Compare hack_assembler with the official Assembler on the chapter 6 programs (F=regex to filter)"
 	@echo "make asm FILE=...   Assemble one .asm, print the .hack it writes, and compare it with the official Assembler"
+	@echo "make test-vm        Translate the chapter 7 and 8 programs with vm_translator and run their tests (F=regex to filter)"
+	@echo "make vm FILE=...    Translate one .vm file or program directory in place and run its test"
 	@echo "make fmt            Run clang-format over the C++ sources under projects/"
 	@echo "make compdb         Symlink build/debug/compile_commands.json to the repo root"
-	@echo "make clean          Remove the build directory and the generated .out and .hack files"
+	@echo "make clean          Remove the build directory and the generated .out, .hack, and translated .asm files"
 
 .PHONY: build
 build:
@@ -25,7 +28,7 @@ test-cpp: build
 
 .PHONY: test-asm
 test-asm: build
-	ctest --preset debug --label-regex acceptance $(if $(F),--tests-regex '$(F)')
+	ctest --preset debug --label-regex '^assembler$$' $(if $(F),--tests-regex '$(F)')
 
 .PHONY: asm
 asm: build
@@ -33,6 +36,15 @@ asm: build
 	$(ASSEMBLER) $(FILE)
 	@cat $(basename $(FILE)).hack
 	@$(PYTHON) scripts/compare_hack.py $(ASSEMBLER) $(FILE)
+
+.PHONY: test-vm
+test-vm: build
+	ctest --preset debug --label-regex '^vm$$' $(if $(F),--tests-regex '$(F)')
+
+.PHONY: vm
+vm: build
+	@test -n "$(FILE)" || { echo "usage: make vm FILE=projects/07-08-vm-translator/StackArithmetic/SimpleAdd/SimpleAdd.vm"; exit 2; }
+	@$(PYTHON) scripts/run_vm_test.py --in-place $(VM_TRANSLATOR) $(FILE)
 
 .PHONY: test
 test:
@@ -58,3 +70,4 @@ clean:
 	rm -rf build compile_commands.json
 	find projects -name '*.out' -delete
 	find projects/06-assembler -name '*.hack' -delete
+	find projects/07-08-vm-translator -name '*.asm' -delete
