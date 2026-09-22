@@ -33,9 +33,34 @@ TEST(ProcessLineTest, RemovesSpaceAndComment) {
   EXPECT_EQ("D=A", process_line("    D=A // comment"));
 }
 
+TEST(ProcessLineTest, ReturnsEmptyStringForEmptyLine) { EXPECT_EQ("", process_line("")); }
+
+TEST(ProcessLineTest, RemovesCommentWithoutSpace) {
+  EXPECT_EQ("D=A", process_line("D=A//comment"));
+}
+
+TEST(ProcessLineTest, RemovesCommentAfterLabel) {
+  EXPECT_EQ("(LOOP)", process_line("(LOOP) // comment"));
+}
+
+// CRLF line endings: std::getline leaves the '\r' at the end of each line
+TEST(ProcessLineTest, RemovesCarriageReturn) { EXPECT_EQ("D=A", process_line("D=A\r")); }
+
+TEST(ProcessLineTest, ReturnsEmptyStringForCarriageReturnOnlyLine) {
+  EXPECT_EQ("", process_line("\r"));
+}
+
+TEST(ProcessLineTest, RemovesSpaceAndCarriageReturn) { EXPECT_EQ("@2", process_line("  @2  \r")); }
+
 // clasify instruction type
 TEST(InstructionTypeTest, AInstruction) {
   InstructionType result = instruction_type("@12");
+
+  EXPECT_EQ(InstructionType::A_INSTRUCTION, result);
+}
+
+TEST(InstructionTypeTest, SymbolicAInstruction) {
+  InstructionType result = instruction_type("@LOOP");
 
   EXPECT_EQ(InstructionType::A_INSTRUCTION, result);
 }
@@ -77,7 +102,13 @@ TEST(InstructionTypeTest, ThrowsOnEmptyInstruction) {
 // parse symbol
 TEST(ParseSymbolTest, ParseAInstruction) { EXPECT_EQ("12", parse_symbol("@12")); }
 
+TEST(ParseSymbolTest, ParseSymbolicAInstruction) { EXPECT_EQ("LOOP", parse_symbol("@LOOP")); }
+
 TEST(ParseSymbolTest, ParseLInstruction) { EXPECT_EQ("LOOP", parse_symbol("(LOOP)")); }
+
+TEST(ParseSymbolTest, ThrowsOnEmptyInstruction) {
+  EXPECT_THROW(parse_symbol(""), std::invalid_argument);
+}
 
 TEST(ParseSymbolTest, ThrowsOnInvalidAInstruction) {
   EXPECT_THROW(parse_symbol("@"), std::invalid_argument);

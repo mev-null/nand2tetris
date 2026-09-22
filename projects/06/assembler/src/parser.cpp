@@ -10,13 +10,14 @@ std::string process_line(std::string line) {
   line = line.substr(0, com_pos);
 
   size_t pos = 0;
-  while ((pos < line.size()) && (line[pos] == ' ' || line[pos] == '\t')) {
+  while ((pos < line.size()) && (line[pos] == ' ' || line[pos] == '\t' || line[pos] == '\r')) {
     ++pos;
   }
   line = line.substr(pos);
 
   size_t rpos = line.size();
-  while ((rpos > 0) && (line[rpos - 1] == ' ' || line[rpos - 1] == '\t')) {
+  while ((rpos > 0) &&
+         (line[rpos - 1] == ' ' || line[rpos - 1] == '\t' || line[rpos - 1] == '\r')) {
     --rpos;
   }
   line = line.substr(0, rpos);
