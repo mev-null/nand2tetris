@@ -3,6 +3,7 @@ add_library(
     src/parser.cpp
     src/code.cpp
     src/assembler.cpp
+    src/symbol_table.cpp
 )
 
 target_include_directories(
@@ -25,6 +26,7 @@ add_executable(
     tests/parser_test.cpp
     tests/code_test.cpp
     tests/assembler_test.cpp
+    tests/symbol_table_test.cpp
 )
 
 target_link_libraries(
