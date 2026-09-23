@@ -1,0 +1,5 @@
+Checks: '-*,misc-include-cleaner'
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'projects/.*'
+CheckOptions:
+  misc-include-cleaner.IgnoreHeaders: 'bits/.*;ext/.*'
