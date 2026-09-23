@@ -1,9 +1,12 @@
 #include "assembler.hpp"
 
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <istream>
+#include <ostream>
 #include <stdexcept>
 #include <string>
 #include <vector>

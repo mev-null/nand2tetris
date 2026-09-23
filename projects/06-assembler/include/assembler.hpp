@@ -2,9 +2,11 @@
 
 #include <filesystem>
 #include <istream>
+#include <ostream>
 #include <string>
-#include <symbol_table.hpp>
 #include <vector>
+
+#include "symbol_table.hpp"
 
 class Assembler {
  public:
