@@ -87,6 +87,14 @@ TEST(ParseCommandTest, ParsesAdd) {
   EXPECT_EQ(std::nullopt, command.arg2);
 }
 
+TEST(ParseCommandTest, ParsesPushWithZeroIndex) {
+  Command command = ParseCommand("push local 0");
+
+  EXPECT_EQ(CommandType::kPush, command.type);
+  EXPECT_EQ("local", command.arg1);
+  EXPECT_EQ(0, command.arg2);
+}
+
 TEST(ParseCommandTest, RejectPushWithoutSegmentAndIndex) {
   EXPECT_THROW(ParseCommand("push");, std::invalid_argument);
 }
@@ -103,12 +111,50 @@ TEST(ParseCommandTest, RejectPushWithStringIndex) {
   EXPECT_THROW(ParseCommand("push local abc"), std::invalid_argument);
 }
 
+TEST(ParseCommandTest, RejectPushWithTrailingCharactersAfterIndex) {
+  EXPECT_THROW(ParseCommand("push local 3abc"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPushWithDecimalIndex) {
+  EXPECT_THROW(ParseCommand("push local 3."), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPushWithSignedIndex) {
+  EXPECT_THROW(ParseCommand("push local +3"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPushWithNegativeIndex) {
+  EXPECT_THROW(ParseCommand("push local -1"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPushWithIndexOutOfRange) {
+  EXPECT_THROW(ParseCommand("push local 99999999999"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPopWithoutSegmentAndIndex) {
+  EXPECT_THROW(ParseCommand("pop"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPopWithSegmentWithoutIndex) {
+  EXPECT_THROW(ParseCommand("pop local"), std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectPopWithThreeArgs) {
+  EXPECT_THROW(ParseCommand("pop local 3 2"), std::invalid_argument);
+}
+
 TEST(ParseCommandTest, RejectAddWithSegment) {
   EXPECT_THROW(ParseCommand("add local");, std::invalid_argument);
 }
 
 TEST(ParseCommandTest, RejectAddWithSegmentAndIndex) {
   EXPECT_THROW(ParseCommand("add local 3");, std::invalid_argument);
+}
+
+TEST(ParseCommandTest, RejectEmptyLine) { EXPECT_THROW(ParseCommand(""), std::invalid_argument); }
+
+TEST(ParseCommandTest, RejectUppercasedCommand) {
+  EXPECT_THROW(ParseCommand("Push local 3"), std::invalid_argument);
 }
 
 TEST(ParseCommandTest, RejectUnexpectedCommand) {
