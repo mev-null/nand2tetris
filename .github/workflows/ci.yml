@@ -83,4 +83,4 @@ jobs:
           cmake --build --preset debug
 
       - name: Test
-        run: ctest --preset debug --label-exclude vm
+        run: ctest --preset debug --exclude-regex '^Translate\.'
