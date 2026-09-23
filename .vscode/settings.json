@@ -1,5 +1,10 @@
 {
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/debug/compile_commands.json",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/projects/06-assembler/include",
+        "${workspaceFolder}/projects/07-08-vm-translator/include"
+    ],
     "[cpp]": {
         "editor.defaultFormatter": "ms-vscode.cpptools",
         "editor.formatOnSave": true,
