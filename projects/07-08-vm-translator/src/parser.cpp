@@ -1,10 +1,11 @@
 #include "parser.hpp"
 
+#include <charconv>
 #include <cstddef>
-#include <exception>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <unordered_map>
 
 #include "command.hpp"
@@ -79,11 +80,16 @@ Command ParseCommand(const std::string& line) {
 
       std::string arg2;
       if (stream >> arg2) {
-        try {
-          command.arg2 = std::stoi(arg2);
-        } catch (const std::exception&) {
+        int index = 0;
+        const char* last = arg2.data() + arg2.size();
+        const auto [stop, error] = std::from_chars(arg2.data(), last, index);
+        if (error != std::errc{} || stop != last) {
           throw std::invalid_argument(name + " takes a number as its index: " + line);
         }
+        if (index < 0) {
+          throw std::invalid_argument(name + " takes a non-negative index: " + line);
+        }
+        command.arg2 = index;
       } else {
         throw std::invalid_argument(name + " takes a segment and an index: " + line);
       }
