@@ -1,23 +1,6 @@
-add_library(
-    vm_core
-    src/parser.cpp
-    src/code_writer.cpp
-    src/vm_translator.cpp
-)
-
-target_include_directories(
-    vm_core
-    PUBLIC include
-)
-
 add_executable(
     vm_translator
     src/main.cpp
-)
-
-target_link_libraries(
-    vm_translator
-    PRIVATE vm_core
 )
 
 # Acceptance: every course program of chapters 7 and 8, translated and run on the CPU
