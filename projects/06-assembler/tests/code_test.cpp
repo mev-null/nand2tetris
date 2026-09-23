@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+#include "parser.hpp"
+
 namespace {
 
 struct CodeCase {

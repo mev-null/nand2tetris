@@ -2,17 +2,7 @@
 
 #include <string>
 
-enum class InstructionType {
-  A_INSTRUCTION,
-  C_INSTRUCTION,
-  L_INSTRUCTION,
-};
-
-struct CInstruction {
-  std::string dest;
-  std::string comp;
-  std::string jump;
-};
+#include "instruction.hpp"
 
 std::string process_line(std::string line);
 InstructionType instruction_type(const std::string& instruction);

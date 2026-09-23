@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "parser.hpp"
+#include "instruction.hpp"
 
 std::string comp_code(const std::string& comp);
 std::string dest_code(const std::string& dest);
