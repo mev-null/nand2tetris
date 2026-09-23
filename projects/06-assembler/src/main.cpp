@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
   std::filesystem::path input_path = argv[1];
   std::filesystem::path output_path = input_path;
   output_path.replace_extension(".hack");
-  Assembler r;
+  hack::assembler::Assembler r;
   r.AssembleFile(input_path, output_path);
   return 0;
 }

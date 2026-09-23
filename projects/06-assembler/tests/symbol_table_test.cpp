@@ -6,6 +6,8 @@
 
 #include <gtest/gtest.h>
 
+namespace hack::assembler {
+
 TEST(SymbolTableTest, AddsAndFindsSymbol) {
   SymbolTable table;
 
@@ -91,3 +93,4 @@ TEST_P(PredefinedSymbolTest, HasAddress) {
 INSTANTIATE_TEST_SUITE_P(AllSymbols, PredefinedSymbolTest, testing::ValuesIn(kPredefinedCases));
 
 }  // namespace
+}  // namespace hack::assembler

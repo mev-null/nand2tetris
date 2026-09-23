@@ -2,6 +2,8 @@
 
 #include <string>
 
+namespace hack::assembler {
+
 enum class InstructionType {
   kAInstruction,
   kCInstruction,
@@ -13,3 +15,5 @@ struct CInstruction {
   std::string comp;
   std::string jump;
 };
+
+}  // namespace hack::assembler

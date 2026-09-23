@@ -8,6 +8,7 @@
 
 #include "parser.hpp"
 
+namespace hack::assembler {
 namespace {
 
 struct CodeCase {
@@ -190,3 +191,4 @@ TEST(CInstructionEncoderErrorTest, ThrowsOnMissingComp) {
 }
 
 }  // namespace
+}  // namespace hack::assembler
