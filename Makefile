@@ -8,7 +8,7 @@ help:
 	@echo "make build          Configure and build with the debug preset (ASan + UBSan)"
 	@echo "make test           Run every project's tests, one summary line per project"
 	@echo "make test-hw N=01   Run the tests of the project directory for chapter N, with per-test detail"
-	@echo "make test-cpp       Build and run the GoogleTest unit tests (F=regex to filter)"
+	@echo "make test-cpp       Build and run the GoogleTest unit tests (P=assembler|vm for one project, F=regex to filter)"
 	@echo "make test-asm       Compare hack_assembler with the official Assembler on the chapter 6 programs (F=regex to filter)"
 	@echo "make asm FILE=...   Assemble one .asm, print the .hack it writes, and compare it with the official Assembler"
 	@echo "make test-vm        Translate the chapter 7 and 8 programs with vm_translator and run their tests (F=regex to filter)"
@@ -24,11 +24,11 @@ build:
 
 .PHONY: test-cpp
 test-cpp: build
-	ctest --preset debug --label-exclude acceptance $(if $(F),--tests-regex '$(F)')
+	ctest --preset debug --label-regex '^unit$$' $(if $(P),--label-regex '^$(P)$$') $(if $(F),--tests-regex '$(F)')
 
 .PHONY: test-asm
 test-asm: build
-	ctest --preset debug --label-regex '^assembler$$' $(if $(F),--tests-regex '$(F)')
+	ctest --preset debug --label-regex '^acceptance$$' --label-regex '^assembler$$' $(if $(F),--tests-regex '$(F)')
 
 .PHONY: asm
 asm: build
@@ -39,7 +39,7 @@ asm: build
 
 .PHONY: test-vm
 test-vm: build
-	ctest --preset debug --label-regex '^vm$$' $(if $(F),--tests-regex '$(F)')
+	ctest --preset debug --label-regex '^acceptance$$' --label-regex '^vm$$' $(if $(F),--tests-regex '$(F)')
 
 .PHONY: vm
 vm: build

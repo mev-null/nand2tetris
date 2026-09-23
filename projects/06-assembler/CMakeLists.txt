@@ -35,7 +35,7 @@ target_link_libraries(
     GTest::gtest_main
 )
 
-gtest_discover_tests(assembler_tests)
+gtest_discover_tests(assembler_tests PROPERTIES LABELS "unit;assembler")
 
 # Acceptance: every course program, compared with the official Assembler
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
