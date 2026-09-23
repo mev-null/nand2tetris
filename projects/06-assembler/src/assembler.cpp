@@ -16,6 +16,8 @@
 #include "parser.hpp"
 #include "symbol_table.hpp"
 
+namespace hack::assembler {
+
 bool IsNumber(const std::string& symbol);
 
 void Assembler::AssembleFile(const std::filesystem::path& input_path,
@@ -108,3 +110,5 @@ bool IsNumber(const std::string& symbol) {
 
   return std::all_of(symbol.begin(), symbol.end(), [](unsigned char c) { return std::isdigit(c); });
 }
+
+}  // namespace hack::assembler

@@ -6,6 +6,8 @@
 
 #include "instruction.hpp"
 
+namespace hack::assembler {
+
 std::string ProcessLine(std::string line) {
   std::size_t com_pos = line.find("//");
   line = line.substr(0, com_pos);
@@ -89,3 +91,5 @@ CInstruction ParseCInstruction(const std::string& instruction) {
 
   return result;
 }
+
+}  // namespace hack::assembler

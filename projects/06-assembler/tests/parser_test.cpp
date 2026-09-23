@@ -6,6 +6,8 @@
 
 #include "instruction.hpp"
 
+namespace hack::assembler {
+
 // preprocess
 TEST(ProcessLineTest, ReturnsInstructionUnchanged) { EXPECT_EQ("D=A", ProcessLine("D=A")); }
 
@@ -162,3 +164,5 @@ TEST(CInstructionParserTest, ParsesDestAndCompWithOrAndJump) {
   EXPECT_EQ("D|A", result.comp);
   EXPECT_EQ("JN", result.jump);
 }
+
+}  // namespace hack::assembler

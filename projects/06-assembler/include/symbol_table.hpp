@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+namespace hack::assembler {
+
 class SymbolTable {
  public:
   SymbolTable();
@@ -14,3 +16,5 @@ class SymbolTable {
  private:
   std::unordered_map<std::string, int> table_;
 };
+
+}  // namespace hack::assembler

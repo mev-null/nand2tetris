@@ -8,6 +8,8 @@
 
 #include "symbol_table.hpp"
 
+namespace hack::assembler {
+
 class Assembler {
  public:
   void AssembleFile(const std::filesystem::path& input_path,
@@ -24,3 +26,5 @@ class Assembler {
   int variable_symbol_address_ = 16;
   std::vector<std::string> instructions_;
 };
+
+}  // namespace hack::assembler

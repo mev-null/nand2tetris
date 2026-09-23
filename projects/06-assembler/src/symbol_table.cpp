@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <string>
 
+namespace hack::assembler {
+
 SymbolTable::SymbolTable() {
   table_ = {
       {"SP",     0    },
@@ -51,3 +53,5 @@ int SymbolTable::GetAddress(const std::string& symbol) const {
   }
   return it->second;
 }
+
+}  // namespace hack::assembler

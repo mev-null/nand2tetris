@@ -7,6 +7,8 @@
 
 #include "instruction.hpp"
 
+namespace hack::assembler {
+
 std::string CompCode(const std::string& comp) {
   static const std::unordered_map<std::string, std::string> kTable = {
       {"0",   "0101010"},
@@ -103,3 +105,5 @@ std::string EncodeCInstruction(const CInstruction& instruction) {
 
   return result;
 }
+
+}  // namespace hack::assembler
