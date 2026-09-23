@@ -169,5 +169,9 @@ TEST(ParseCommandTest, RejectUnexpectedCommandWithSegmentAndIndex) {
   EXPECT_THROW(ParseCommand("addi local 3"), std::invalid_argument);
 }
 
+TEST(ParseCommandTest, RejectUnexpectedSegment) {
+  EXPECT_THROW(ParseCommand("push Local 1"), std::invalid_argument);
+}
+
 }  // namespace
 }  // namespace hack::vm

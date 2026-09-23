@@ -7,6 +7,7 @@
 #include <string>
 #include <system_error>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "command.hpp"
 
@@ -28,6 +29,10 @@ const std::unordered_map<std::string, CommandType> kCommandTable{
     {"and",  CommandType::kArithmetic},
     {"or",   CommandType::kArithmetic},
     {"not",  CommandType::kArithmetic},
+};
+
+const std::unordered_set<std::string> kSegments{
+    "argument", "local", "static", "constant", "this", "that", "pointer", "temp",
 };
 
 }  // namespace
@@ -76,6 +81,10 @@ Command ParseCommand(const std::string& line) {
     command.arg1 = name;
   } else {
     if (stream >> arg1) {
+      const auto entry = kSegments.find(arg1);
+      if (entry == kSegments.end()) {
+        throw std::invalid_argument("unknown segment: " + arg1);
+      }
       command.arg1 = arg1;
 
       std::string arg2;
