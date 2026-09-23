@@ -3,12 +3,14 @@
 #include <charconv>
 #include <cstddef>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 #include <system_error>
 #include <unordered_map>
 #include <unordered_set>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "command.hpp"
 
 namespace hack::vm {
@@ -57,17 +59,17 @@ std::string ProcessLine(std::string line) {
   return line;
 }
 
-Command ParseCommand(const std::string& line) {
+absl::StatusOr<Command> ParseCommand(const std::string& line) {
   std::istringstream stream(line);
 
   std::string name;
   if (!(stream >> name)) {
-    throw std::invalid_argument("no command on the line");
+    return absl::InvalidArgumentError("no command on the line");
   }
 
   const auto entry = kCommandTable.find(name);
   if (entry == kCommandTable.end()) {
-    throw std::invalid_argument("unknown command: " + line);
+    return absl::InvalidArgumentError(absl::StrCat("unknown command: ", line));
   }
 
   Command command;
@@ -76,14 +78,14 @@ Command ParseCommand(const std::string& line) {
   std::string arg1;
   if (command.type == CommandType::kArithmetic) {
     if (stream >> arg1) {
-      throw std::invalid_argument(name + " takes no argument: " + line);
+      return absl::InvalidArgumentError(absl::StrCat(name, " takes no argument: ", line));
     }
     command.arg1 = name;
   } else {
     if (stream >> arg1) {
       const auto entry = kSegments.find(arg1);
       if (entry == kSegments.end()) {
-        throw std::invalid_argument("unknown segment: " + arg1);
+        return absl::InvalidArgumentError(absl::StrCat("unknown segment: ", arg1));
       }
       command.arg1 = arg1;
 
@@ -93,21 +95,26 @@ Command ParseCommand(const std::string& line) {
         const char* last = arg2.data() + arg2.size();
         const auto [stop, error] = std::from_chars(arg2.data(), last, index);
         if (error != std::errc{} || stop != last) {
-          throw std::invalid_argument(name + " takes a number as its index: " + line);
+          return absl::InvalidArgumentError(
+              absl::StrCat(name, " takes a number as its index: ", line));
         }
         if (index < 0) {
-          throw std::invalid_argument(name + " takes a non-negative index: " + line);
+          return absl::InvalidArgumentError(
+              absl::StrCat(name, " takes a non-negative index: ", line));
         }
         command.arg2 = index;
       } else {
-        throw std::invalid_argument(name + " takes a segment and an index: " + line);
+        return absl::InvalidArgumentError(
+            absl::StrCat(name, " takes a segment and an index: ", line));
       }
       std::string arg3;
       if (stream >> arg3) {
-        throw std::invalid_argument(name + " takes a segment and an index: " + line);
+        return absl::InvalidArgumentError(
+            absl::StrCat(name, " takes a segment and an index: ", line));
       }
     } else {
-      throw std::invalid_argument(name + " takes a segment and an index: " + line);
+      return absl::InvalidArgumentError(
+          absl::StrCat(name, " takes a segment and an index: ", line));
     }
   }
   return command;
