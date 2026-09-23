@@ -1,7 +1,36 @@
+add_library(
+    vm_core
+    src/parser.cpp
+)
+
+target_include_directories(
+    vm_core
+    PUBLIC include
+)
+
 add_executable(
     vm_translator
     src/main.cpp
 )
+
+target_link_libraries(
+    vm_translator
+    PRIVATE vm_core
+)
+
+add_executable(
+    vm_tests
+    tests/parser_test.cpp
+)
+
+target_link_libraries(
+    vm_tests
+    PRIVATE
+    vm_core
+    GTest::gtest_main
+)
+
+gtest_discover_tests(vm_tests TEST_PREFIX "vm." PROPERTIES LABELS "unit;vm")
 
 # Acceptance: every course program of chapters 7 and 8, translated and run on the CPU
 # Emulator. The *VME.tst scripts run the VM code on the VM Emulator and do not exercise
