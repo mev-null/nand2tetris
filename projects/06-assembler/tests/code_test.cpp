@@ -53,11 +53,11 @@ const CodeCase kCompCases[] = {
 
 class CompCodeTableTest : public testing::TestWithParam<CodeCase> {};
 
-TEST_P(CompCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, comp_code(GetParam().mnemonic)); }
+TEST_P(CompCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, CompCode(GetParam().mnemonic)); }
 
 INSTANTIATE_TEST_SUITE_P(AllMnemonics, CompCodeTableTest, testing::ValuesIn(kCompCases));
 
-TEST(CompCodeTest, ThrowsOnInvalidComp) { EXPECT_THROW(comp_code("D*2"), std::invalid_argument); }
+TEST(CompCodeTest, ThrowsOnInvalidComp) { EXPECT_THROW(CompCode("D*2"), std::invalid_argument); }
 
 // dest
 const CodeCase kDestCases[] = {
@@ -73,11 +73,11 @@ const CodeCase kDestCases[] = {
 
 class DestCodeTableTest : public testing::TestWithParam<CodeCase> {};
 
-TEST_P(DestCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, dest_code(GetParam().mnemonic)); }
+TEST_P(DestCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, DestCode(GetParam().mnemonic)); }
 
 INSTANTIATE_TEST_SUITE_P(AllMnemonics, DestCodeTableTest, testing::ValuesIn(kDestCases));
 
-TEST(DestCodeTest, ThrowsOnInvalidDest) { EXPECT_THROW(dest_code("XYZ"), std::invalid_argument); }
+TEST(DestCodeTest, ThrowsOnInvalidDest) { EXPECT_THROW(DestCode("XYZ"), std::invalid_argument); }
 
 // jump
 const CodeCase kJumpCases[] = {
@@ -93,41 +93,37 @@ const CodeCase kJumpCases[] = {
 
 class JumpCodeTableTest : public testing::TestWithParam<CodeCase> {};
 
-TEST_P(JumpCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, jump_code(GetParam().mnemonic)); }
+TEST_P(JumpCodeTableTest, Encodes) { EXPECT_EQ(GetParam().bits, JumpCode(GetParam().mnemonic)); }
 
 INSTANTIATE_TEST_SUITE_P(AllMnemonics, JumpCodeTableTest, testing::ValuesIn(kJumpCases));
 
 TEST(JumpCodeTest, ThrowsOnInvalidJump) {
-  EXPECT_THROW(jump_code("INVALID"), std::invalid_argument);
+  EXPECT_THROW(JumpCode("INVALID"), std::invalid_argument);
 }
 
 // A instruction encoder
-TEST(AInstructionEncoderTest, EncodesZero) {
-  EXPECT_EQ("0000000000000000", encode_a_instruction(0));
-}
+TEST(AInstructionEncoderTest, EncodesZero) { EXPECT_EQ("0000000000000000", EncodeAInstruction(0)); }
 
-TEST(AInstructionEncoderTest, EncodesOne) {
-  EXPECT_EQ("0000000000000001", encode_a_instruction(1));
-}
+TEST(AInstructionEncoderTest, EncodesOne) { EXPECT_EQ("0000000000000001", EncodeAInstruction(1)); }
 
 TEST(AInstructionEncoderTest, EncodesTwentyOne) {
-  EXPECT_EQ("0000000000010101", encode_a_instruction(21));
+  EXPECT_EQ("0000000000010101", EncodeAInstruction(21));
 }
 
 TEST(AInstructionEncoderTest, EncodesMaxValue) {
-  EXPECT_EQ("0111111111111111", encode_a_instruction(32767));
+  EXPECT_EQ("0111111111111111", EncodeAInstruction(32767));
 }
 
 TEST(AInstructionEncoderTest, EncodesHighestBit) {
-  EXPECT_EQ("0100000000000000", encode_a_instruction(16384));
+  EXPECT_EQ("0100000000000000", EncodeAInstruction(16384));
 }
 
 TEST(AInstructionEncoderTest, ThrowsOnValueOutOfRange) {
-  EXPECT_THROW(encode_a_instruction(32768), std::invalid_argument);
+  EXPECT_THROW(EncodeAInstruction(32768), std::invalid_argument);
 }
 
 TEST(AInstructionEncoderTest, ThrowsOnNegativeValue) {
-  EXPECT_THROW(encode_a_instruction(-1), std::invalid_argument);
+  EXPECT_THROW(EncodeAInstruction(-1), std::invalid_argument);
 }
 
 // C instruction encoder
@@ -171,26 +167,26 @@ const CInstructionCase kCInstructionCases[] = {
 class CInstructionEncoderTest : public testing::TestWithParam<CInstructionCase> {};
 
 TEST_P(CInstructionEncoderTest, Encodes) {
-  EXPECT_EQ(GetParam().binary, encode_c_instruction(parse_c_instruction(GetParam().instruction)));
+  EXPECT_EQ(GetParam().binary, EncodeCInstruction(ParseCInstruction(GetParam().instruction)));
 }
 
 INSTANTIATE_TEST_SUITE_P(RepresentativeInstructions, CInstructionEncoderTest,
                          testing::ValuesIn(kCInstructionCases));
 
 TEST(CInstructionEncoderErrorTest, ThrowsOnInvalidComp) {
-  EXPECT_THROW(encode_c_instruction(parse_c_instruction("D=D*2")), std::invalid_argument);
+  EXPECT_THROW(EncodeCInstruction(ParseCInstruction("D=D*2")), std::invalid_argument);
 }
 
 TEST(CInstructionEncoderErrorTest, ThrowsOnInvalidDest) {
-  EXPECT_THROW(encode_c_instruction(parse_c_instruction("X=D")), std::invalid_argument);
+  EXPECT_THROW(EncodeCInstruction(ParseCInstruction("X=D")), std::invalid_argument);
 }
 
 TEST(CInstructionEncoderErrorTest, ThrowsOnInvalidJump) {
-  EXPECT_THROW(encode_c_instruction(parse_c_instruction("0;JMPX")), std::invalid_argument);
+  EXPECT_THROW(EncodeCInstruction(ParseCInstruction("0;JMPX")), std::invalid_argument);
 }
 
 TEST(CInstructionEncoderErrorTest, ThrowsOnMissingComp) {
-  EXPECT_THROW(encode_c_instruction(parse_c_instruction("D=")), std::invalid_argument);
+  EXPECT_THROW(EncodeCInstruction(ParseCInstruction("D=")), std::invalid_argument);
 }
 
 }  // namespace

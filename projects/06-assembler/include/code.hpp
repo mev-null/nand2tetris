@@ -4,9 +4,9 @@
 
 #include "instruction.hpp"
 
-std::string comp_code(const std::string& comp);
-std::string dest_code(const std::string& dest);
-std::string jump_code(const std::string& jump);
+std::string CompCode(const std::string& comp);
+std::string DestCode(const std::string& dest);
+std::string JumpCode(const std::string& jump);
 
-std::string encode_a_instruction(int value);
-std::string encode_c_instruction(const CInstruction& instruction);
+std::string EncodeAInstruction(int value);
+std::string EncodeCInstruction(const CInstruction& instruction);
