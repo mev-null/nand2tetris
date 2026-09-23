@@ -1,6 +1,5 @@
 #include "assembler.hpp"
 
-#include <bitset>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -13,31 +12,7 @@
 #include "parser.hpp"
 #include "symbol_table.hpp"
 
-bool _isNumber(const std::string& symbol);
-
-std::string encode_a_instruction(const std::string& instruction) {
-  std::string symbol = parse_symbol(instruction);
-
-  int value = std::stoi(symbol);
-
-  if (value < 0 || value > 32767) {
-    throw std::invalid_argument("A instruction value out of range");
-  }
-
-  std::string result = "0";
-  result += std::bitset<15>(value).to_string();
-  return result;
-}
-
-std::string encode_c_instruction(const std::string& instruction) {
-  CInstruction parsed = parse_c_instruction(instruction);
-  std::string result = "111";
-  result += comp_code(parsed.comp);
-  result += dest_code(parsed.dest);
-  result += jump_code(parsed.jump);
-
-  return result;
-}
+bool isNumber(const std::string& symbol);
 
 void Assembler::AssembleFile(const std::filesystem::path& input_path,
                              const std::filesystem::path& output_path) {
@@ -89,7 +64,7 @@ void Assembler::SecondPass(std::ostream& output) {
         break;
       }
       case InstructionType::C_INSTRUCTION: {
-        machine_lang = encode_c_instruction(instruction);
+        machine_lang = encode_c_instruction(parse_c_instruction(instruction));
         ++cur_address;
         break;
       }
@@ -107,11 +82,11 @@ void Assembler::SecondPass(std::ostream& output) {
 
 std::string Assembler::ProcessAInstruction(const std::string& instruction) {
   int address = ResolveAddress(parse_symbol(instruction));
-  return encode_a_instruction('@' + std::to_string(address));
+  return encode_a_instruction(address);
 }
 
 int Assembler::ResolveAddress(const std::string& symbol) {
-  if (_isNumber(symbol)) {
+  if (isNumber(symbol)) {
     return std::stoi(symbol);
   }
   if (!symbols_.Contains(symbol)) {
@@ -122,7 +97,7 @@ int Assembler::ResolveAddress(const std::string& symbol) {
   return symbols_.GetAddress(symbol);
 }
 
-bool _isNumber(const std::string& symbol) {
+bool isNumber(const std::string& symbol) {
   if (symbol.empty()) {
     return false;
   }

@@ -1,5 +1,6 @@
 #include "code.hpp"
 
+#include <bitset>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -80,4 +81,23 @@ std::string jump_code(const std::string& jump) {
     throw std::invalid_argument("invalid jump");
   }
   return it->second;
+}
+
+std::string encode_a_instruction(int value) {
+  if (value < 0 || value > 32767) {
+    throw std::invalid_argument("A instruction value out of range");
+  }
+
+  std::string result = "0";
+  result += std::bitset<15>(value).to_string();
+  return result;
+}
+
+std::string encode_c_instruction(const CInstruction& instruction) {
+  std::string result = "111";
+  result += comp_code(instruction.comp);
+  result += dest_code(instruction.dest);
+  result += jump_code(instruction.jump);
+
+  return result;
 }

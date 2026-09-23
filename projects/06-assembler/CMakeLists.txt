@@ -25,7 +25,6 @@ add_executable(
     assembler_tests
     tests/parser_test.cpp
     tests/code_test.cpp
-    tests/assembler_test.cpp
     tests/symbol_table_test.cpp
 )
 

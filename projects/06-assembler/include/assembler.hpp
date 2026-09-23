@@ -22,7 +22,3 @@ class Assembler {
   int variable_symbol_address_ = 16;
   std::vector<std::string> instructions_;
 };
-
-// In GoogleTest scope
-std::string encode_a_instruction(const std::string& instruction);
-std::string encode_c_instruction(const std::string& instruction);
