@@ -7,8 +7,8 @@
 
 #include "instruction.hpp"
 
-std::string comp_code(const std::string& comp) {
-  static const std::unordered_map<std::string, std::string> table = {
+std::string CompCode(const std::string& comp) {
+  static const std::unordered_map<std::string, std::string> kTable = {
       {"0",   "0101010"},
       {"1",   "0111111"},
       {"-1",  "0111010"},
@@ -40,15 +40,15 @@ std::string comp_code(const std::string& comp) {
       {"D|M", "1010101"}
   };
 
-  auto it = table.find(comp);
-  if (it == table.end()) {
+  auto it = kTable.find(comp);
+  if (it == kTable.end()) {
     throw std::invalid_argument("invalid comp");
   }
   return it->second;
 }
 
-std::string dest_code(const std::string& dest) {
-  static const std::unordered_map<std::string, std::string> table = {
+std::string DestCode(const std::string& dest) {
+  static const std::unordered_map<std::string, std::string> kTable = {
       {"",    "000"},
       {"M",   "001"},
       {"D",   "010"},
@@ -59,15 +59,15 @@ std::string dest_code(const std::string& dest) {
       {"AMD", "111"}
   };
 
-  auto it = table.find(dest);
-  if (it == table.end()) {
+  auto it = kTable.find(dest);
+  if (it == kTable.end()) {
     throw std::invalid_argument("invalid dest");
   }
   return it->second;
 }
 
-std::string jump_code(const std::string& jump) {
-  static const std::unordered_map<std::string, std::string> table = {
+std::string JumpCode(const std::string& jump) {
+  static const std::unordered_map<std::string, std::string> kTable = {
       {"",    "000"},
       {"JGT", "001"},
       {"JEQ", "010"},
@@ -78,14 +78,14 @@ std::string jump_code(const std::string& jump) {
       {"JMP", "111"}
   };
 
-  auto it = table.find(jump);
-  if (it == table.end()) {
+  auto it = kTable.find(jump);
+  if (it == kTable.end()) {
     throw std::invalid_argument("invalid jump");
   }
   return it->second;
 }
 
-std::string encode_a_instruction(int value) {
+std::string EncodeAInstruction(int value) {
   if (value < 0 || value > 32767) {
     throw std::invalid_argument("A instruction value out of range");
   }
@@ -95,11 +95,11 @@ std::string encode_a_instruction(int value) {
   return result;
 }
 
-std::string encode_c_instruction(const CInstruction& instruction) {
+std::string EncodeCInstruction(const CInstruction& instruction) {
   std::string result = "111";
-  result += comp_code(instruction.comp);
-  result += dest_code(instruction.dest);
-  result += jump_code(instruction.jump);
+  result += CompCode(instruction.comp);
+  result += DestCode(instruction.dest);
+  result += JumpCode(instruction.jump);
 
   return result;
 }

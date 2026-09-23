@@ -7,126 +7,124 @@
 #include "instruction.hpp"
 
 // preprocess
-TEST(ProcessLineTest, ReturnsInstructionUnchanged) { EXPECT_EQ("D=A", process_line("D=A")); }
+TEST(ProcessLineTest, ReturnsInstructionUnchanged) { EXPECT_EQ("D=A", ProcessLine("D=A")); }
 
 TEST(ProcessLineTest, ReturnsEmptyStringForCommentOnlyLine) {
-  EXPECT_EQ("", process_line("// comment"));
+  EXPECT_EQ("", ProcessLine("// comment"));
 }
 
 TEST(ProcessLineTest, ReturnsEmptyStringForWhitespaceOnlyLine) {
-  EXPECT_EQ("", process_line("     "));
+  EXPECT_EQ("", ProcessLine("     "));
 }
 
-TEST(ProcessLineTest, RemovesComment) { EXPECT_EQ("D=A", process_line("D=A // comment")); }
+TEST(ProcessLineTest, RemovesComment) { EXPECT_EQ("D=A", ProcessLine("D=A // comment")); }
 
-TEST(ProcessLineTest, RemovesLeadingSpaces) { EXPECT_EQ("D=A", process_line("    D=A")); }
+TEST(ProcessLineTest, RemovesLeadingSpaces) { EXPECT_EQ("D=A", ProcessLine("    D=A")); }
 
-TEST(ProcessLineTest, RemovesTrailingSpaces) { EXPECT_EQ("D=A", process_line("D=A    ")); }
+TEST(ProcessLineTest, RemovesTrailingSpaces) { EXPECT_EQ("D=A", ProcessLine("D=A    ")); }
 
 TEST(ProcessLineTest, RemovesLeadingAndTrailingSpace) {
-  EXPECT_EQ("D=A", process_line("    D=A    "));
+  EXPECT_EQ("D=A", ProcessLine("    D=A    "));
 }
 
-TEST(ProcessLineTest, RemovesTab) { EXPECT_EQ("D=A", process_line("\tD=A\t")); }
+TEST(ProcessLineTest, RemovesTab) { EXPECT_EQ("D=A", ProcessLine("\tD=A\t")); }
 
-TEST(ProcessLineTest, RemovesMixedWhitespace) { EXPECT_EQ("D=A", process_line(" \t  D=A \t ")); }
+TEST(ProcessLineTest, RemovesMixedWhitespace) { EXPECT_EQ("D=A", ProcessLine(" \t  D=A \t ")); }
 
 TEST(ProcessLineTest, RemovesSpaceAndComment) {
-  EXPECT_EQ("D=A", process_line("    D=A // comment"));
+  EXPECT_EQ("D=A", ProcessLine("    D=A // comment"));
 }
 
-TEST(ProcessLineTest, ReturnsEmptyStringForEmptyLine) { EXPECT_EQ("", process_line("")); }
+TEST(ProcessLineTest, ReturnsEmptyStringForEmptyLine) { EXPECT_EQ("", ProcessLine("")); }
 
-TEST(ProcessLineTest, RemovesCommentWithoutSpace) {
-  EXPECT_EQ("D=A", process_line("D=A//comment"));
-}
+TEST(ProcessLineTest, RemovesCommentWithoutSpace) { EXPECT_EQ("D=A", ProcessLine("D=A//comment")); }
 
 TEST(ProcessLineTest, RemovesCommentAfterLabel) {
-  EXPECT_EQ("(LOOP)", process_line("(LOOP) // comment"));
+  EXPECT_EQ("(LOOP)", ProcessLine("(LOOP) // comment"));
 }
 
 // CRLF line endings: std::getline leaves the '\r' at the end of each line
-TEST(ProcessLineTest, RemovesCarriageReturn) { EXPECT_EQ("D=A", process_line("D=A\r")); }
+TEST(ProcessLineTest, RemovesCarriageReturn) { EXPECT_EQ("D=A", ProcessLine("D=A\r")); }
 
 TEST(ProcessLineTest, ReturnsEmptyStringForCarriageReturnOnlyLine) {
-  EXPECT_EQ("", process_line("\r"));
+  EXPECT_EQ("", ProcessLine("\r"));
 }
 
-TEST(ProcessLineTest, RemovesSpaceAndCarriageReturn) { EXPECT_EQ("@2", process_line("  @2  \r")); }
+TEST(ProcessLineTest, RemovesSpaceAndCarriageReturn) { EXPECT_EQ("@2", ProcessLine("  @2  \r")); }
 
 // clasify instruction type
 TEST(InstructionTypeTest, AInstruction) {
-  InstructionType result = instruction_type("@12");
+  InstructionType result = ClassifyInstruction("@12");
 
-  EXPECT_EQ(InstructionType::A_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kAInstruction, result);
 }
 
 TEST(InstructionTypeTest, SymbolicAInstruction) {
-  InstructionType result = instruction_type("@LOOP");
+  InstructionType result = ClassifyInstruction("@LOOP");
 
-  EXPECT_EQ(InstructionType::A_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kAInstruction, result);
 }
 
 TEST(InstructionTypeTest, CInstructionComp) {
-  InstructionType result = instruction_type("D");
+  InstructionType result = ClassifyInstruction("D");
 
-  EXPECT_EQ(InstructionType::C_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kCInstruction, result);
 }
 
 TEST(InstructionTypeTest, CInstructionDestAndComp) {
-  InstructionType result = instruction_type("A=M");
+  InstructionType result = ClassifyInstruction("A=M");
 
-  EXPECT_EQ(InstructionType::C_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kCInstruction, result);
 }
 
 TEST(InstructionTypeTest, CInstructionCompAndJump) {
-  InstructionType result = instruction_type("0;JUMP");
+  InstructionType result = ClassifyInstruction("0;JUMP");
 
-  EXPECT_EQ(InstructionType::C_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kCInstruction, result);
 }
 
 TEST(InstructionTypeTest, CInstructionDestAndCompAndJump) {
-  InstructionType result = instruction_type("D=D+A;JGT");
+  InstructionType result = ClassifyInstruction("D=D+A;JGT");
 
-  EXPECT_EQ(InstructionType::C_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kCInstruction, result);
 }
 
 TEST(InstructionTypeTest, LInstruction) {
-  InstructionType result = instruction_type("(LOOP)");
+  InstructionType result = ClassifyInstruction("(LOOP)");
 
-  EXPECT_EQ(InstructionType::L_INSTRUCTION, result);
+  EXPECT_EQ(InstructionType::kLInstruction, result);
 }
 
 TEST(InstructionTypeTest, ThrowsOnEmptyInstruction) {
-  EXPECT_THROW(instruction_type(""), std::invalid_argument);
+  EXPECT_THROW(ClassifyInstruction(""), std::invalid_argument);
 }
 
 // parse symbol
-TEST(ParseSymbolTest, ParseAInstruction) { EXPECT_EQ("12", parse_symbol("@12")); }
+TEST(ParseSymbolTest, ParseAInstruction) { EXPECT_EQ("12", ParseSymbol("@12")); }
 
-TEST(ParseSymbolTest, ParseSymbolicAInstruction) { EXPECT_EQ("LOOP", parse_symbol("@LOOP")); }
+TEST(ParseSymbolTest, ParseSymbolicAInstruction) { EXPECT_EQ("LOOP", ParseSymbol("@LOOP")); }
 
-TEST(ParseSymbolTest, ParseLInstruction) { EXPECT_EQ("LOOP", parse_symbol("(LOOP)")); }
+TEST(ParseSymbolTest, ParseLInstruction) { EXPECT_EQ("LOOP", ParseSymbol("(LOOP)")); }
 
 TEST(ParseSymbolTest, ThrowsOnEmptyInstruction) {
-  EXPECT_THROW(parse_symbol(""), std::invalid_argument);
+  EXPECT_THROW(ParseSymbol(""), std::invalid_argument);
 }
 
 TEST(ParseSymbolTest, ThrowsOnInvalidAInstruction) {
-  EXPECT_THROW(parse_symbol("@"), std::invalid_argument);
+  EXPECT_THROW(ParseSymbol("@"), std::invalid_argument);
 }
 
 TEST(ParseSymbolTest, ThrowsOnInvalidLInstruction) {
-  EXPECT_THROW(parse_symbol("()"), std::invalid_argument);
+  EXPECT_THROW(ParseSymbol("()"), std::invalid_argument);
 }
 
 TEST(ParseSymbolTest, ThrowsOnCInstruction) {
-  EXPECT_THROW(parse_symbol("A=D"), std::invalid_argument);
+  EXPECT_THROW(ParseSymbol("A=D"), std::invalid_argument);
 }
 
 // perse C instruction
 TEST(CInstructionParserTest, ParsesDestAndComp) {
-  CInstruction result = parse_c_instruction("D=M");
+  CInstruction result = ParseCInstruction("D=M");
 
   EXPECT_EQ("D", result.dest);
   EXPECT_EQ("M", result.comp);
@@ -134,7 +132,7 @@ TEST(CInstructionParserTest, ParsesDestAndComp) {
 }
 
 TEST(CInstructionParserTest, ParsesCompAndJump) {
-  CInstruction result = parse_c_instruction("0;JMP");
+  CInstruction result = ParseCInstruction("0;JMP");
 
   EXPECT_EQ("", result.dest);
   EXPECT_EQ("0", result.comp);
@@ -142,7 +140,7 @@ TEST(CInstructionParserTest, ParsesCompAndJump) {
 }
 
 TEST(CInstructionParserTest, ParsesDestAndCompAndJump) {
-  CInstruction result = parse_c_instruction("D=D+A;JGT");
+  CInstruction result = ParseCInstruction("D=D+A;JGT");
 
   EXPECT_EQ("D", result.dest);
   EXPECT_EQ("D+A", result.comp);
@@ -150,7 +148,7 @@ TEST(CInstructionParserTest, ParsesDestAndCompAndJump) {
 }
 
 TEST(CInstructionParserTest, ParsesComp) {
-  CInstruction result = parse_c_instruction("D");
+  CInstruction result = ParseCInstruction("D");
 
   EXPECT_EQ("", result.dest);
   EXPECT_EQ("D", result.comp);
@@ -158,7 +156,7 @@ TEST(CInstructionParserTest, ParsesComp) {
 }
 
 TEST(CInstructionParserTest, ParsesDestAndCompWithOrAndJump) {
-  CInstruction result = parse_c_instruction("AMD=D|A;JN");
+  CInstruction result = ParseCInstruction("AMD=D|A;JN");
 
   EXPECT_EQ("AMD", result.dest);
   EXPECT_EQ("D|A", result.comp);

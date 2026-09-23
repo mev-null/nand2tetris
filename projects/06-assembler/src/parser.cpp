@@ -6,7 +6,7 @@
 
 #include "instruction.hpp"
 
-std::string process_line(std::string line) {
+std::string ProcessLine(std::string line) {
   std::size_t com_pos = line.find("//");
   line = line.substr(0, com_pos);
 
@@ -26,21 +26,21 @@ std::string process_line(std::string line) {
   return line;
 }
 
-InstructionType instruction_type(const std::string& instruction) {
+InstructionType ClassifyInstruction(const std::string& instruction) {
   if (instruction.empty()) {
     throw std::invalid_argument("instruction must not be empty");
   }
 
   if (instruction[0] == '@') {
-    return InstructionType::A_INSTRUCTION;
+    return InstructionType::kAInstruction;
   } else if (instruction[0] == '(') {
-    return InstructionType::L_INSTRUCTION;
+    return InstructionType::kLInstruction;
   } else {
-    return InstructionType::C_INSTRUCTION;
+    return InstructionType::kCInstruction;
   }
 }
 
-std::string parse_symbol(const std::string& instruction) {
+std::string ParseSymbol(const std::string& instruction) {
   if (instruction.empty()) {
     throw std::invalid_argument("instruction must not be empty");
   }
@@ -61,7 +61,7 @@ std::string parse_symbol(const std::string& instruction) {
   }
 }
 
-CInstruction parse_c_instruction(const std::string& instruction) {
+CInstruction ParseCInstruction(const std::string& instruction) {
   std::size_t eqpos = instruction.find("=");
   std::size_t semipos = instruction.find(";");
 
