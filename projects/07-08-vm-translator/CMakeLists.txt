@@ -8,6 +8,15 @@ target_include_directories(
     PUBLIC include
 )
 
+target_link_libraries(
+    vm_core
+    PUBLIC
+    absl::status
+    absl::statusor
+    PRIVATE
+    absl::strings
+)
+
 add_executable(
     vm_translator
     src/main.cpp
@@ -27,6 +36,7 @@ target_link_libraries(
     vm_tests
     PRIVATE
     vm_core
+    absl::status_matchers
     GTest::gtest_main
 )
 
