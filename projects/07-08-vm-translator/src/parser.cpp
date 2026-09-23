@@ -56,33 +56,43 @@ Command ParseCommand(const std::string& line) {
 
   std::string name;
   if (!(stream >> name)) {
-    throw std::invalid_argument("empty line or invalid command");
+    throw std::invalid_argument("no command on the line");
   }
 
   const auto entry = kCommandTable.find(name);
   if (entry == kCommandTable.end()) {
-    throw std::invalid_argument("unknown command: " + name);
+    throw std::invalid_argument("unknown command: " + line);
   }
 
   Command command;
   command.type = entry->second;
 
-  if (command.type == CommandType::kArithmetic) {
-    command.arg1 = name;
-    return command;
-  }
-
   std::string arg1;
-  if (stream >> arg1) {
-    command.arg1 = arg1;
+  if (command.type == CommandType::kArithmetic) {
+    if (stream >> arg1) {
+      throw std::invalid_argument(name + " takes no argument: " + line);
+    }
+    command.arg1 = name;
+  } else {
+    if (stream >> arg1) {
+      command.arg1 = arg1;
 
-    std::string arg2;
-    if (stream >> arg2) {
-      try {
-        command.arg2 = std::stoi(arg2);
-      } catch (const std::exception&) {
-        throw std::invalid_argument("arg2 is not an integer: " + arg2);
+      std::string arg2;
+      if (stream >> arg2) {
+        try {
+          command.arg2 = std::stoi(arg2);
+        } catch (const std::exception&) {
+          throw std::invalid_argument(name + " takes a number as its index: " + line);
+        }
+      } else {
+        throw std::invalid_argument(name + " takes a segment and an index: " + line);
       }
+      std::string arg3;
+      if (stream >> arg3) {
+        throw std::invalid_argument(name + " takes a segment and an index: " + line);
+      }
+    } else {
+      throw std::invalid_argument(name + " takes a segment and an index: " + line);
     }
   }
   return command;
