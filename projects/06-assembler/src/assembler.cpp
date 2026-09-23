@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "code.hpp"
+#include "instruction.hpp"
 #include "parser.hpp"
 #include "symbol_table.hpp"
 

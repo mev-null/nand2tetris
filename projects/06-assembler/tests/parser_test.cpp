@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include "instruction.hpp"
+
 // preprocess
 TEST(ProcessLineTest, ReturnsInstructionUnchanged) { EXPECT_EQ("D=A", process_line("D=A")); }
 

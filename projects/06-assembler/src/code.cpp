@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "instruction.hpp"
+
 std::string comp_code(const std::string& comp) {
   static const std::unordered_map<std::string, std::string> table = {
       {"0",   "0101010"},
