@@ -18,7 +18,17 @@
 
 namespace hack::assembler {
 
-bool IsNumber(const std::string& symbol);
+namespace {
+
+bool IsNumber(const std::string& symbol) {
+  if (symbol.empty()) {
+    return false;
+  }
+
+  return std::all_of(symbol.begin(), symbol.end(), [](unsigned char c) { return std::isdigit(c); });
+}
+
+}  // namespace
 
 void Assembler::AssembleFile(const std::filesystem::path& input_path,
                              const std::filesystem::path& output_path) {
@@ -101,14 +111,6 @@ int Assembler::ResolveAddress(const std::string& symbol) {
     ++variable_symbol_address_;
   }
   return symbols_.GetAddress(symbol);
-}
-
-bool IsNumber(const std::string& symbol) {
-  if (symbol.empty()) {
-    return false;
-  }
-
-  return std::all_of(symbol.begin(), symbol.end(), [](unsigned char c) { return std::isdigit(c); });
 }
 
 }  // namespace hack::assembler
