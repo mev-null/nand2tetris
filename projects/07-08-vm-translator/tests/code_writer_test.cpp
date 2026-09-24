@@ -1,5 +1,6 @@
 #include "code_writer.hpp"
 
+#include <optional>
 #include <sstream>
 
 #include <gmock/gmock.h>
