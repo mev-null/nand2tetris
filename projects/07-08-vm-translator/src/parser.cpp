@@ -6,7 +6,6 @@
 #include <string>
 #include <system_error>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -33,8 +32,15 @@ const std::unordered_map<std::string, CommandType> kCommandTable{
     {"not",  CommandType::kArithmetic},
 };
 
-const std::unordered_set<std::string> kSegments{
-    "argument", "local", "static", "constant", "this", "that", "pointer", "temp",
+const std::unordered_map<std::string, Segment> kSegmentTable{
+    {"argument", Segment::kArgument},
+    {"local",    Segment::kLocal   },
+    {"static",   Segment::kStatic  },
+    {"constant", Segment::kConstant},
+    {"this",     Segment::kThis    },
+    {"that",     Segment::kThat    },
+    {"pointer",  Segment::kPointer },
+    {"temp",     Segment::kTemp    },
 };
 
 }  // namespace
@@ -83,11 +89,11 @@ absl::StatusOr<Command> ParseCommand(const std::string& line) {
     command.arg1 = name;
   } else {
     if (stream >> arg1) {
-      const auto entry = kSegments.find(arg1);
-      if (entry == kSegments.end()) {
+      const auto seg_entry = kSegmentTable.find(arg1);
+      if (seg_entry == kSegmentTable.end()) {
         return absl::InvalidArgumentError(absl::StrCat("unknown segment: ", arg1));
       }
-      command.arg1 = arg1;
+      command.segment = seg_entry->second;
 
       std::string arg2;
       if (stream >> arg2) {
