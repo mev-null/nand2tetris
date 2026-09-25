@@ -22,7 +22,7 @@ class CodeWriter {
   absl::Status WritePushPop(const Command& command);
 
   void PushDToStack();
-  void PopStackToD();
+  void PopStackToR13Address();
   std::string NewLabel(std::string_view prefix);
 
   std::ostream& output_;

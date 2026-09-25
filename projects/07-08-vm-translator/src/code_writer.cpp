@@ -63,7 +63,23 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
       return absl::OkStatus();
 
     case CommandType::kPop:
-      return absl::UnimplementedError("pop is not implemented yet");
+      switch (*command.segment) {
+        case Segment::kLocal: {
+          output_ << "@LCL\n"
+                  << "D=M\n"
+                  << "@" << *command.arg2 << "\n"
+                  << "D=D+A\n"
+                  << "@R13\n"
+                  << "M=D\n";
+          break;
+        }
+        case Segment::kConstant:
+          return absl::InvalidArgumentError("cannot pop to constant segment");
+        default:
+          return absl::UnimplementedError("This segment is not implemented yet");
+      }
+      PopStackToR13Address();
+      return absl::OkStatus();
 
     default:
       return absl::InvalidArgumentError("WritePushPop requires a push or pop command");
@@ -78,7 +94,15 @@ void CodeWriter::PushDToStack() {
           << "M=M+1\n";
 }
 
-void CodeWriter::PopStackToD() {}
+void CodeWriter::PopStackToR13Address() {
+  output_ << "@SP\n"
+          << "M=M-1\n"
+          << "A=M\n"
+          << "D=M\n"
+          << "@R13\n"
+          << "A=M\n"
+          << "M=D\n";
+}
 
 std::string CodeWriter::NewLabel(std::string_view prefix) {
   throw std::invalid_argument("This function is not implemented yet");
