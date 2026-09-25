@@ -11,12 +11,9 @@
 
 using ::absl_testing::IsOk;
 using ::absl_testing::StatusIs;
-using ::testing::Not;
 
 namespace hack::vm {
 namespace {
-
-using ::absl_testing::IsOk;
 
 TEST(CodeWriterTest, WritesPushConstant) {
   std::ostringstream output;
