@@ -115,7 +115,7 @@ TEST(CodeWriterTest, WritesAdd) {
             "AM=M-1\n"
             "D=M\n"
             "A=A-1\n"
-            "M=M+D\n");
+            "M=D+M\n");
 }
 
 TEST(CodeWriterTest, RejectArithmeticWithoutOp) {

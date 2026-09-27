@@ -120,7 +120,7 @@ void CodeWriter::Add() {
           << "AM=M-1\n"
           << "D=M\n"
           << "A=A-1\n"
-          << "M=M+D\n";
+          << "M=D+M\n";
 }
 
 std::string CodeWriter::NewLabel(std::string_view prefix) {
