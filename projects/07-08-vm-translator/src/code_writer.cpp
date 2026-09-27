@@ -29,7 +29,18 @@ void CodeWriter::WriteInfiniteLoop() {
 }
 
 absl::Status CodeWriter::WriteArithmetic(const Command& command) {
-  return absl::UnimplementedError("This function is not implemented yet");
+  if (!command.op.has_value()) {
+    return absl::InvalidArgumentError("arithmetic requires an operator");
+  }
+  switch (*command.op) {
+    case Operator::kAdd: {
+      Add();
+      return absl::OkStatus();
+    }
+    default: {
+      return absl::UnimplementedError("This operator is not implemented yet");
+    }
+  }
 }
 
 absl::Status CodeWriter::WritePushPop(const Command& command) {
@@ -102,6 +113,14 @@ void CodeWriter::PopStackToR13Address() {
           << "@R13\n"
           << "A=M\n"
           << "M=D\n";
+}
+
+void CodeWriter::Add() {
+  output_ << "@SP\n"
+          << "AM=M-1\n"
+          << "D=M\n"
+          << "A=A-1\n"
+          << "M=M+D\n";
 }
 
 std::string CodeWriter::NewLabel(std::string_view prefix) {

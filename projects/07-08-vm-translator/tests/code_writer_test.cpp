@@ -99,5 +99,35 @@ TEST(CodeWriterTest, RejectPopConstant) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST(CodeWriterTest, WritesAdd) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kAdd,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "M=M+D\n");
+}
+
+TEST(CodeWriterTest, RejectArithmeticWithoutOp) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 }  // namespace
 }  // namespace hack::vm

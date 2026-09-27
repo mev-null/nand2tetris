@@ -23,6 +23,7 @@ class CodeWriter {
 
   void PushDToStack();
   void PopStackToR13Address();
+  void Add();
   std::string NewLabel(std::string_view prefix);
 
   std::ostream& output_;
