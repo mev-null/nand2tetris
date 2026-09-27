@@ -53,8 +53,20 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
       output_ << "M=D|M\n";
       break;
     }
-    default: {
-      return absl::UnimplementedError("This operator is not implemented yet");
+    case Operator::kNeg: {
+      return absl::UnimplementedError("neg is not implemented yet");
+    }
+    case Operator::kNot: {
+      return absl::UnimplementedError("not is not implemented yet");
+    }
+    case Operator::kEq: {
+      return absl::UnimplementedError("eq is not implemented yet");
+    }
+    case Operator::kGt: {
+      return absl::UnimplementedError("gt is not implemented yet");
+    }
+    case Operator::kLt: {
+      return absl::UnimplementedError("lt is not implemented yet");
     }
   }
   return absl::OkStatus();

@@ -1,6 +1,7 @@
 #include "parser.hpp"
 
 #include <optional>
+#include <string>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -101,6 +102,35 @@ TEST(ParseCommandTest, ParsesAdd) {
   EXPECT_EQ(std::nullopt, command->arg1);
   EXPECT_EQ(std::nullopt, command->arg2);
 }
+
+struct OperatorCase {
+  const char* name;
+  Operator op;
+};
+
+class ParseOperatorTest : public ::testing::TestWithParam<OperatorCase> {};
+
+TEST_P(ParseOperatorTest, ParsesArithmetic) {
+  absl::StatusOr<Command> command = ParseCommand(GetParam().name);
+
+  ASSERT_THAT(command, IsOk());
+  EXPECT_EQ(CommandType::kArithmetic, command->type);
+  EXPECT_EQ(GetParam().op, command->op);
+  EXPECT_EQ(std::nullopt, command->arg1);
+  EXPECT_EQ(std::nullopt, command->segment);
+  EXPECT_EQ(std::nullopt, command->arg2);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllOperators, ParseOperatorTest,
+    ::testing::Values(OperatorCase{"add", Operator::kAdd}, OperatorCase{"sub", Operator::kSub},
+                      OperatorCase{"neg", Operator::kNeg}, OperatorCase{"eq", Operator::kEq},
+                      OperatorCase{"gt", Operator::kGt}, OperatorCase{"lt", Operator::kLt},
+                      OperatorCase{"and", Operator::kAnd}, OperatorCase{"or", Operator::kOr},
+                      OperatorCase{"not", Operator::kNot}),
+    [](const ::testing::TestParamInfo<OperatorCase>& info) {
+      return std::string(info.param.name);
+    });
 
 TEST(ParseCommandTest, ParsesPushWithZeroIndex) {
   absl::StatusOr<Command> command = ParseCommand("push local 0");

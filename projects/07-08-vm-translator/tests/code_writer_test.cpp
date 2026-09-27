@@ -172,6 +172,66 @@ TEST(CodeWriterTest, WritesOr) {
             "M=D|M\n");
 }
 
+TEST(CodeWriterTest, WritesNeg) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kNeg,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+}
+
+TEST(CodeWriterTest, WritesNot) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kNot,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+}
+
+TEST(CodeWriterTest, WritesEq) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kEq,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+}
+
+TEST(CodeWriterTest, WritesGt) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kGt,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+}
+
+TEST(CodeWriterTest, WritesLt) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kLt,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+}
+
 TEST(CodeWriterTest, RejectArithmeticWithoutOp) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
