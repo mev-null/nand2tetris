@@ -95,11 +95,11 @@ absl::StatusOr<Command> ParseCommand(const std::string& line) {
   if (command.type == CommandType::kArithmetic) {
     const auto op_entry = kOperatorTable.find(name);
     if (op_entry == kOperatorTable.end()) {
-      return absl::InvalidArgumentError(absl::StrCat("unknown segment: ", name));
+      return absl::InvalidArgumentError(absl::StrCat("unknown operator: ", name));
     }
     std::string invalid;
     if (stream >> invalid) {
-      return absl::InvalidArgumentError(absl::StrCat("invalid segment: ", invalid));
+      return absl::InvalidArgumentError(absl::StrCat(name, " takes no argument: ", line));
     }
     command.op = op_entry->second;
   } else {
