@@ -2,6 +2,7 @@ add_library(
     vm_core
     src/parser.cpp
     src/code_writer.cpp
+    src/vm_translator.cpp
 )
 
 target_include_directories(
