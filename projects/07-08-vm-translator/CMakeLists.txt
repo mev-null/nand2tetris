@@ -1,6 +1,7 @@
 add_library(
     vm_core
     src/parser.cpp
+    src/code_writer.cpp
 )
 
 target_include_directories(
@@ -30,6 +31,7 @@ target_link_libraries(
 add_executable(
     vm_tests
     tests/parser_test.cpp
+    tests/code_writer_test.cpp
 )
 
 target_link_libraries(

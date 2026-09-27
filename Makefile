@@ -2,6 +2,7 @@ PYTHON := python3
 RUNNER := $(PYTHON) scripts/run_tst.py
 ASSEMBLER := build/debug/projects/06-assembler/hack_assembler
 VM_TRANSLATOR := build/debug/projects/07-08-vm-translator/vm_translator
+CLANG_TIDY ?= $(or $(shell command -v clang-tidy),$(wildcard /opt/homebrew/opt/llvm/bin/clang-tidy),clang-tidy)
 
 .PHONY: help
 help:
@@ -14,6 +15,10 @@ help:
 	@echo "make test-vm        Translate the chapter 7 and 8 programs with vm_translator and run their tests (F=regex to filter)"
 	@echo "make vm FILE=...    Translate one .vm file or program directory in place and run its test"
 	@echo "make fmt            Run clang-format over the C++ sources under projects/"
+	@echo "make fmt-check      Fail if any C++ source under projects/ is not clang-formatted"
+	@echo "make tidy           Run clang-tidy over the C++ sources under projects/"
+	@echo "make lint           Run fmt-check and tidy, as the CI lint job does"
+	@echo "make ci             Run the CI jobs locally: lint, then build and the tests except Translate.*"
 	@echo "make compdb         Symlink build/debug/compile_commands.json to the repo root"
 	@echo "make clean          Remove the build directory and the generated .out, .hack, and translated .asm files"
 
@@ -60,6 +65,22 @@ test-hw:
 .PHONY: fmt
 fmt:
 	@find projects -name '*.cpp' -o -name '*.hpp' | xargs -r clang-format -i
+
+.PHONY: fmt-check
+fmt-check:
+	@find projects \( -name '*.cpp' -o -name '*.hpp' \) -print0 | xargs -0 clang-format --dry-run --Werror
+
+.PHONY: tidy
+tidy:
+	cmake --preset debug
+	@find projects -name '*.cpp' -print0 | xargs -0 $(CLANG_TIDY) -p build/debug --quiet
+
+.PHONY: lint
+lint: fmt-check tidy
+
+.PHONY: ci
+ci: lint build
+	ctest --preset debug --exclude-regex '^Translate\.'
 
 .PHONY: compdb
 compdb:

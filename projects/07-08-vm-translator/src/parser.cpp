@@ -6,7 +6,6 @@
 #include <string>
 #include <system_error>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -33,8 +32,27 @@ const std::unordered_map<std::string, CommandType> kCommandTable{
     {"not",  CommandType::kArithmetic},
 };
 
-const std::unordered_set<std::string> kSegments{
-    "argument", "local", "static", "constant", "this", "that", "pointer", "temp",
+const std::unordered_map<std::string, Operator> kOperatorTable{
+    {"add", Operator::kAdd},
+    {"sub", Operator::kSub},
+    {"neg", Operator::kNeg},
+    {"eq",  Operator::kEq },
+    {"gt",  Operator::kGt },
+    {"lt",  Operator::kLt },
+    {"and", Operator::kAnd},
+    {"or",  Operator::kOr },
+    {"not", Operator::kNot},
+};
+
+const std::unordered_map<std::string, Segment> kSegmentTable{
+    {"argument", Segment::kArgument},
+    {"local",    Segment::kLocal   },
+    {"static",   Segment::kStatic  },
+    {"constant", Segment::kConstant},
+    {"this",     Segment::kThis    },
+    {"that",     Segment::kThat    },
+    {"pointer",  Segment::kPointer },
+    {"temp",     Segment::kTemp    },
 };
 
 }  // namespace
@@ -74,20 +92,24 @@ absl::StatusOr<Command> ParseCommand(const std::string& line) {
 
   Command command;
   command.type = entry->second;
-
-  std::string arg1;
   if (command.type == CommandType::kArithmetic) {
-    if (stream >> arg1) {
+    const auto op_entry = kOperatorTable.find(name);
+    if (op_entry == kOperatorTable.end()) {
+      return absl::InvalidArgumentError(absl::StrCat("unknown operator: ", name));
+    }
+    std::string invalid;
+    if (stream >> invalid) {
       return absl::InvalidArgumentError(absl::StrCat(name, " takes no argument: ", line));
     }
-    command.arg1 = name;
+    command.op = op_entry->second;
   } else {
+    std::string arg1;
     if (stream >> arg1) {
-      const auto entry = kSegments.find(arg1);
-      if (entry == kSegments.end()) {
+      const auto seg_entry = kSegmentTable.find(arg1);
+      if (seg_entry == kSegmentTable.end()) {
         return absl::InvalidArgumentError(absl::StrCat("unknown segment: ", arg1));
       }
-      command.arg1 = arg1;
+      command.segment = seg_entry->second;
 
       std::string arg2;
       if (stream >> arg2) {
