@@ -34,13 +34,30 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
   }
   switch (*command.op) {
     case Operator::kAdd: {
-      Add();
-      return absl::OkStatus();
+      ArithmeticTowArgs();
+      output_ << "M=D+M\n";
+      break;
+    }
+    case Operator::kSub: {
+      ArithmeticTowArgs();
+      output_ << "M=M-D\n";
+      break;
+    }
+    case Operator::kAnd: {
+      ArithmeticTowArgs();
+      output_ << "M=D&M\n";
+      break;
+    }
+    case Operator::kOr: {
+      ArithmeticTowArgs();
+      output_ << "M=D|M\n";
+      break;
     }
     default: {
       return absl::UnimplementedError("This operator is not implemented yet");
     }
   }
+  return absl::OkStatus();
 }
 
 absl::Status CodeWriter::WritePushPop(const Command& command) {
@@ -115,12 +132,11 @@ void CodeWriter::PopStackToR13Address() {
           << "M=D\n";
 }
 
-void CodeWriter::Add() {
+void CodeWriter::ArithmeticTowArgs() {
   output_ << "@SP\n"
           << "AM=M-1\n"
           << "D=M\n"
-          << "A=A-1\n"
-          << "M=D+M\n";
+          << "A=A-1\n";
 }
 
 std::string CodeWriter::NewLabel(std::string_view prefix) {

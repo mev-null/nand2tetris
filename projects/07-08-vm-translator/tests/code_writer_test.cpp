@@ -118,6 +118,60 @@ TEST(CodeWriterTest, WritesAdd) {
             "M=D+M\n");
 }
 
+TEST(CodeWriterTest, WritesSub) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kSub,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "M=M-D\n");
+}
+
+TEST(CodeWriterTest, WritesAnd) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kAnd,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "M=D&M\n");
+}
+
+TEST(CodeWriterTest, WritesOr) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kOr,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "M=D|M\n");
+}
+
 TEST(CodeWriterTest, RejectArithmeticWithoutOp) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
