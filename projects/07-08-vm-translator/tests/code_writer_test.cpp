@@ -1,6 +1,5 @@
 #include "code_writer.hpp"
 
-#include <optional>
 #include <sstream>
 
 #include <gmock/gmock.h>
@@ -20,7 +19,11 @@ TEST(CodeWriterTest, WritesPushConstant) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
 
-  EXPECT_THAT(writer.WriteCommand({CommandType::kPush, std::nullopt, Segment::kConstant, 7}),
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kConstant,
+                                   .arg2 = 7}),
               IsOk());
   EXPECT_EQ(output.str(),
             "@7\n"
@@ -36,7 +39,12 @@ TEST(CodeWriterTest, WritesPushLocal) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
 
-  EXPECT_THAT(writer.WriteCommand({CommandType::kPush, std::nullopt, Segment::kLocal, 7}), IsOk());
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kLocal,
+                                   .arg2 = 7}),
+              IsOk());
   EXPECT_EQ(output.str(),
             "@LCL\n"
             "D=M\n"
@@ -55,7 +63,12 @@ TEST(CodeWriterTest, WritesPopLocal) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
 
-  EXPECT_THAT(writer.WriteCommand({CommandType::kPop, std::nullopt, Segment::kLocal, 7}), IsOk());
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kLocal,
+                                   .arg2 = 7}),
+              IsOk());
   EXPECT_EQ(output.str(),
             // RAM[LCL + 7] <- RAM[SP-1]
             // SP <- SP-1
@@ -78,7 +91,11 @@ TEST(CodeWriterTest, RejectPopConstant) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
 
-  EXPECT_THAT(writer.WriteCommand({CommandType::kPop, std::nullopt, Segment::kConstant, 7}),
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kConstant,
+                                   .arg2 = 7}),
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
