@@ -75,6 +75,8 @@ TEST(ParseCommandTest, ParsesPushWithSegmentAndIndex) {
 
   ASSERT_THAT(command, IsOk());
   EXPECT_EQ(CommandType::kPush, command->type);
+  EXPECT_EQ(std::nullopt, command->op);
+  EXPECT_EQ(std::nullopt, command->arg1);
   EXPECT_EQ(Segment::kLocal, command->segment);
   EXPECT_EQ(3, command->arg2);
 }
@@ -84,6 +86,8 @@ TEST(ParseCommandTest, ParsesPopWithSegmentAndIndex) {
 
   ASSERT_THAT(command, IsOk());
   EXPECT_EQ(CommandType::kPop, command->type);
+  EXPECT_EQ(std::nullopt, command->op);
+  EXPECT_EQ(std::nullopt, command->arg1);
   EXPECT_EQ(Segment::kLocal, command->segment);
   EXPECT_EQ(3, command->arg2);
 }
@@ -93,7 +97,8 @@ TEST(ParseCommandTest, ParsesAdd) {
 
   ASSERT_THAT(command, IsOk());
   EXPECT_EQ(CommandType::kArithmetic, command->type);
-  EXPECT_EQ("add", command->arg1);
+  EXPECT_EQ(Operator::kAdd, command->op);
+  EXPECT_EQ(std::nullopt, command->arg1);
   EXPECT_EQ(std::nullopt, command->arg2);
 }
 
@@ -102,6 +107,8 @@ TEST(ParseCommandTest, ParsesPushWithZeroIndex) {
 
   ASSERT_THAT(command, IsOk());
   EXPECT_EQ(CommandType::kPush, command->type);
+  EXPECT_EQ(std::nullopt, command->op);
+  EXPECT_EQ(std::nullopt, command->arg1);
   EXPECT_EQ(Segment::kLocal, command->segment);
   EXPECT_EQ(0, command->arg2);
 }
