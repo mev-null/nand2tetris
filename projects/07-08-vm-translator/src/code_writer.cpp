@@ -77,9 +77,6 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
       Comparison("JLT");
       break;
     }
-    default: {
-      return absl::UnimplementedError("This operator is not implemented yet");
-    }
   }
   return absl::OkStatus();
 }
@@ -89,7 +86,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
     return absl::InvalidArgumentError("push/pop requires a segment");
   }
   if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a index");
+    return absl::InvalidArgumentError("push/pop requires an index");
   }
   switch (command.type) {
     case CommandType::kPush:
@@ -109,7 +106,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
           break;
         }
         default:
-          return absl::UnimplementedError("This segment is not implemented yet");
+          return absl::UnimplementedError("this segment is not implemented yet");
       }
       PushDToStack();
       return absl::OkStatus();
@@ -128,7 +125,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
         case Segment::kConstant:
           return absl::InvalidArgumentError("cannot pop to constant segment");
         default:
-          return absl::UnimplementedError("This segment is not implemented yet");
+          return absl::UnimplementedError("this segment is not implemented yet");
       }
       PopStackToR13Address();
       return absl::OkStatus();
