@@ -15,8 +15,9 @@ absl::Status CodeWriter::WriteCommand(const Command& command) {
     case CommandType::kArithmetic:
       return WriteArithmetic(command);
     case CommandType::kPush:
+      return WritePush(command);
     case CommandType::kPop:
-      return WritePushPop(command);
+      return WritePop(command);
     default:
       return absl::UnimplementedError("command type is not translated yet");
   }
@@ -64,58 +65,59 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePushPop(const Command& command) {
+absl::Status CodeWriter::WritePush(const Command& command) {
   if (!command.segment.has_value()) {
     return absl::InvalidArgumentError("push/pop requires a segment");
   }
   if (!command.arg2.has_value()) {
     return absl::InvalidArgumentError("push/pop requires an index");
   }
-  switch (command.type) {
-    case CommandType::kPush:
-      switch (*command.segment) {
-        case Segment::kConstant: {
-          output_ << "@" << *command.arg2 << "\n"
-                  << "D=A\n";
-          break;
-        }
-        case Segment::kLocal: {
-          output_ << "@LCL\n"
-                  << "D=M\n"
-                  << "@" << *command.arg2 << "\n"
-                  << "D=D+A\n"
-                  << "A=D\n"
-                  << "D=M\n";
-          break;
-        }
-        default:
-          return absl::UnimplementedError("this segment is not implemented yet");
-      }
-      WritePushD();
-      return absl::OkStatus();
-
-    case CommandType::kPop:
-      switch (*command.segment) {
-        case Segment::kLocal: {
-          output_ << "@LCL\n"
-                  << "D=M\n"
-                  << "@" << *command.arg2 << "\n"
-                  << "D=D+A\n"
-                  << "@R13\n"
-                  << "M=D\n";
-          break;
-        }
-        case Segment::kConstant:
-          return absl::InvalidArgumentError("cannot pop to constant segment");
-        default:
-          return absl::UnimplementedError("this segment is not implemented yet");
-      }
-      WritePopToR13Address();
-      return absl::OkStatus();
-
+  switch (*command.segment) {
+    case Segment::kConstant: {
+      output_ << "@" << *command.arg2 << "\n"
+              << "D=A\n";
+      break;
+    }
+    case Segment::kLocal: {
+      output_ << "@LCL\n"
+              << "D=M\n"
+              << "@" << *command.arg2 << "\n"
+              << "D=D+A\n"
+              << "A=D\n"
+              << "D=M\n";
+      break;
+    }
     default:
-      return absl::InvalidArgumentError("WritePushPop requires a push or pop command");
+      return absl::UnimplementedError("this segment is not implemented yet");
   }
+  WritePushD();
+  return absl::OkStatus();
+}
+
+absl::Status CodeWriter::WritePop(const Command& command) {
+  if (!command.segment.has_value()) {
+    return absl::InvalidArgumentError("push/pop requires a segment");
+  }
+  if (!command.arg2.has_value()) {
+    return absl::InvalidArgumentError("push/pop requires an index");
+  }
+  switch (*command.segment) {
+    case Segment::kLocal: {
+      output_ << "@LCL\n"
+              << "D=M\n"
+              << "@" << *command.arg2 << "\n"
+              << "D=D+A\n"
+              << "@R13\n"
+              << "M=D\n";
+      break;
+    }
+    case Segment::kConstant:
+      return absl::InvalidArgumentError("cannot pop to constant segment");
+    default:
+      return absl::UnimplementedError("this segment is not implemented yet");
+  }
+  WritePopToR13Address();
+  return absl::OkStatus();
 }
 
 void CodeWriter::WritePushD() {

@@ -19,7 +19,8 @@ class CodeWriter {
 
  private:
   absl::Status WriteArithmetic(const Command& command);
-  absl::Status WritePushPop(const Command& command);
+  absl::Status WritePush(const Command& command);
+  absl::Status WritePop(const Command& command);
 
   void WritePushD();
   void WritePopToR13Address();
