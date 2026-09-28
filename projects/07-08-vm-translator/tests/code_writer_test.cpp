@@ -182,6 +182,10 @@ TEST(CodeWriterTest, WritesNeg) {
                                    .segment = std::nullopt,
                                    .arg2 = std::nullopt}),
               IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "A=M-1\n"
+            "M=-M\n");
 }
 
 TEST(CodeWriterTest, WritesNot) {
@@ -194,6 +198,10 @@ TEST(CodeWriterTest, WritesNot) {
                                    .segment = std::nullopt,
                                    .arg2 = std::nullopt}),
               IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "A=M-1\n"
+            "M=!M\n");
 }
 
 TEST(CodeWriterTest, WritesEq) {

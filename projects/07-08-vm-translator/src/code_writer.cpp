@@ -54,10 +54,16 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
       break;
     }
     case Operator::kNeg: {
-      return absl::UnimplementedError("neg is not implemented yet");
+      output_ << "@SP\n"
+              << "A=M-1\n"
+              << "M=-M\n";
+      break;
     }
     case Operator::kNot: {
-      return absl::UnimplementedError("not is not implemented yet");
+      output_ << "@SP\n"
+              << "A=M-1\n"
+              << "M=!M\n";
+      break;
     }
     case Operator::kEq: {
       return absl::UnimplementedError("eq is not implemented yet");
