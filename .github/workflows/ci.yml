@@ -86,4 +86,4 @@ jobs:
         run: ctest --preset debug --exclude-regex '^Translate\.'
 
       - name: Test the VM translator
-        run: ctest --preset debug --tests-regex '^Translate\.StackArithmetic\.(SimpleAdd|StackTest)$'
+        run: ctest --preset debug --tests-regex '^Translate\.(StackArithmetic|MemoryAccess)\.'

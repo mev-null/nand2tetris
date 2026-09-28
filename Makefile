@@ -81,7 +81,7 @@ lint: fmt-check tidy
 .PHONY: ci
 ci: lint build
 	ctest --preset debug --exclude-regex '^Translate\.'
-	ctest --preset debug --tests-regex '^Translate\.StackArithmetic\.(SimpleAdd|StackTest)$$'
+	ctest --preset debug --tests-regex '^Translate\.(StackArithmetic|MemoryAccess)\.'
 
 .PHONY: clean
 clean:
