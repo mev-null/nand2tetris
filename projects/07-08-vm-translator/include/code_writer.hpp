@@ -28,6 +28,8 @@ class CodeWriter {
   void WriteUnary(std::string_view comp);
   void WriteComparison(std::string_view jump_mnemonic);
   std::string NewLabel(std::string_view kind);
+  void WritePushBaseAddress(std::string_view comp, int index);
+  void WritePopBaseAddress(std::string_view comp, int index);
 
   std::ostream& output_;
   std::string file_name_;

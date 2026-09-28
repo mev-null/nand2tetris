@@ -78,15 +78,18 @@ absl::Status CodeWriter::WritePush(const Command& command) {
               << "D=A\n";
       break;
     }
-    case Segment::kLocal: {
-      output_ << "@LCL\n"
-              << "D=M\n"
-              << "@" << *command.arg2 << "\n"
-              << "D=D+A\n"
-              << "A=D\n"
-              << "D=M\n";
+    case Segment::kLocal:
+      WritePushBaseAddress("LCL", *command.arg2);
       break;
-    }
+    case Segment::kArgument:
+      WritePushBaseAddress("ARG", *command.arg2);
+      break;
+    case Segment::kThis:
+      WritePushBaseAddress("THIS", *command.arg2);
+      break;
+    case Segment::kThat:
+      WritePushBaseAddress("THAT", *command.arg2);
+      break;
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
   }
@@ -102,15 +105,18 @@ absl::Status CodeWriter::WritePop(const Command& command) {
     return absl::InvalidArgumentError("push/pop requires an index");
   }
   switch (*command.segment) {
-    case Segment::kLocal: {
-      output_ << "@LCL\n"
-              << "D=M\n"
-              << "@" << *command.arg2 << "\n"
-              << "D=D+A\n"
-              << "@R13\n"
-              << "M=D\n";
+    case Segment::kLocal:
+      WritePopBaseAddress("LCL", *command.arg2);
       break;
-    }
+    case Segment::kArgument:
+      WritePopBaseAddress("ARG", *command.arg2);
+      break;
+    case Segment::kThis:
+      WritePopBaseAddress("THIS", *command.arg2);
+      break;
+    case Segment::kThat:
+      WritePopBaseAddress("THAT", *command.arg2);
+      break;
     case Segment::kConstant:
       return absl::InvalidArgumentError("cannot pop to constant segment");
     default:
@@ -184,6 +190,24 @@ std::string CodeWriter::NewLabel(std::string_view kind) {
   std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
   ++label_counter_;
   return label;
+}
+
+void CodeWriter::WritePushBaseAddress(std::string_view comp, int index) {
+  output_ << "@" << comp << "\n"
+          << "D=M\n"
+          << "@" << index << "\n"
+          << "D=D+A\n"
+          << "A=D\n"
+          << "D=M\n";
+}
+
+void CodeWriter::WritePopBaseAddress(std::string_view comp, int index) {
+  output_ << "@" << comp << "\n"
+          << "D=M\n"
+          << "@" << index << "\n"
+          << "D=D+A\n"
+          << "@R13\n"
+          << "M=D\n";
 }
 
 }  // namespace hack::vm
