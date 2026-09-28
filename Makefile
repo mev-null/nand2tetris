@@ -3,6 +3,7 @@ RUNNER := $(PYTHON) scripts/run_tst.py
 ASSEMBLER := build/debug/projects/06-assembler/hack_assembler
 VM_TRANSLATOR := build/debug/projects/07-08-vm-translator/vm_translator
 CLANG_TIDY ?= $(or $(shell command -v clang-tidy),$(wildcard /opt/homebrew/opt/llvm/bin/clang-tidy),clang-tidy)
+SDKROOT_ARG := $(if $(shell command -v xcrun),--extra-arg=-isysroot$(shell xcrun --show-sdk-path))
 
 .PHONY: help
 help:
@@ -18,7 +19,7 @@ help:
 	@echo "make fmt-check      Fail if any C++ source under projects/ is not clang-formatted"
 	@echo "make tidy           Run clang-tidy over the C++ sources under projects/"
 	@echo "make lint           Run fmt-check and tidy, as the CI lint job does"
-	@echo "make ci             Run the CI jobs locally: lint, then build and the tests except Translate.*"
+	@echo "make ci             Run the CI jobs locally: lint, build, the unit tests, and the acceptance tests CI runs"
 	@echo "make clean          Remove the build directory and the generated .out, .hack, and translated .asm files"
 
 .PHONY: build
@@ -72,7 +73,7 @@ fmt-check:
 .PHONY: tidy
 tidy:
 	cmake --preset debug
-	@find projects -name '*.cpp' -print0 | xargs -0 $(CLANG_TIDY) -p build/debug --quiet
+	@find projects -name '*.cpp' -print0 | xargs -0 $(CLANG_TIDY) -p build/debug --quiet $(SDKROOT_ARG)
 
 .PHONY: lint
 lint: fmt-check tidy
@@ -80,6 +81,7 @@ lint: fmt-check tidy
 .PHONY: ci
 ci: lint build
 	ctest --preset debug --exclude-regex '^Translate\.'
+	ctest --preset debug --tests-regex '^Translate\.StackArithmetic\.(SimpleAdd|StackTest)$$'
 
 .PHONY: clean
 clean:
