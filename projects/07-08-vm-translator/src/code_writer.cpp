@@ -126,24 +126,6 @@ absl::Status CodeWriter::WritePop(const Command& command) {
   return absl::OkStatus();
 }
 
-void CodeWriter::WritePushD() {
-  output_ << "@SP\n"
-          << "A=M\n"
-          << "M=D\n"
-          << "@SP\n"
-          << "M=M+1\n";
-}
-
-void CodeWriter::WritePopToR13Address() {
-  output_ << "@SP\n"
-          << "M=M-1\n"
-          << "A=M\n"
-          << "D=M\n"
-          << "@R13\n"
-          << "A=M\n"
-          << "M=D\n";
-}
-
 void CodeWriter::WriteBinary(std::string_view comp) {
   output_ << "@SP\n"
           << "AM=M-1\n"
@@ -186,10 +168,22 @@ void CodeWriter::WriteComparison(std::string_view jump_mnemonic) {
           << "(" << end_label << ")\n";
 }
 
-std::string CodeWriter::NewLabel(std::string_view kind) {
-  std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
-  ++label_counter_;
-  return label;
+void CodeWriter::WritePushD() {
+  output_ << "@SP\n"
+          << "A=M\n"
+          << "M=D\n"
+          << "@SP\n"
+          << "M=M+1\n";
+}
+
+void CodeWriter::WritePopToR13Address() {
+  output_ << "@SP\n"
+          << "M=M-1\n"
+          << "A=M\n"
+          << "D=M\n"
+          << "@R13\n"
+          << "A=M\n"
+          << "M=D\n";
 }
 
 void CodeWriter::WritePushBaseAddress(std::string_view comp, int index) {
@@ -208,6 +202,12 @@ void CodeWriter::WritePopBaseAddress(std::string_view comp, int index) {
           << "D=D+A\n"
           << "@R13\n"
           << "M=D\n";
+}
+
+std::string CodeWriter::NewLabel(std::string_view kind) {
+  std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
+  ++label_counter_;
+  return label;
 }
 
 }  // namespace hack::vm
