@@ -19,7 +19,6 @@ help:
 	@echo "make tidy           Run clang-tidy over the C++ sources under projects/"
 	@echo "make lint           Run fmt-check and tidy, as the CI lint job does"
 	@echo "make ci             Run the CI jobs locally: lint, then build and the tests except Translate.*"
-	@echo "make compdb         Symlink build/debug/compile_commands.json to the repo root"
 	@echo "make clean          Remove the build directory and the generated .out, .hack, and translated .asm files"
 
 .PHONY: build
@@ -82,13 +81,9 @@ lint: fmt-check tidy
 ci: lint build
 	ctest --preset debug --exclude-regex '^Translate\.'
 
-.PHONY: compdb
-compdb:
-	ln -sf build/debug/compile_commands.json compile_commands.json
-
 .PHONY: clean
 clean:
-	rm -rf build compile_commands.json
+	rm -rf build
 	find projects -name '*.out' -delete
 	find projects/06-assembler -name '*.hack' -delete
 	find projects/07-08-vm-translator -name '*.asm' -delete
