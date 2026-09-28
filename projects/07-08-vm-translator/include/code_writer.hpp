@@ -25,7 +25,7 @@ class CodeWriter {
   void PopStackToR13Address();
   void ArithmeticTowArgs();
   void Comparison(std::string_view jump_mnemonic);
-  std::string NewLabel();
+  std::string NewLabel(std::string_view kind);
 
   std::ostream& output_;
   std::string file_name_;

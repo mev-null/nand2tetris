@@ -104,18 +104,18 @@ TEST(CodeWriterTest, WritesJEQ) {
             "D=M\n"
             "A=A-1\n"
             "D=M-D\n"
-            "@Foo.0.TRUE\n"
+            "@Foo.CMP.0.TRUE\n"
             "D;JEQ\n"
             "@SP\n"
             "A=M-1\n"
             "M=0\n"
-            "@Foo.0.END\n"
+            "@Foo.CMP.0.END\n"
             "0;JMP\n"
-            "(Foo.0.TRUE)\n"
+            "(Foo.CMP.0.TRUE)\n"
             "@SP\n"
             "A=M-1\n"
             "M=-1\n"
-            "(Foo.0.END)\n");
+            "(Foo.CMP.0.END)\n");
 }
 
 TEST(CodeWriterTest, WritesJGT) {
@@ -134,18 +134,18 @@ TEST(CodeWriterTest, WritesJGT) {
             "D=M\n"
             "A=A-1\n"
             "D=M-D\n"
-            "@Foo.0.TRUE\n"
+            "@Foo.CMP.0.TRUE\n"
             "D;JGT\n"
             "@SP\n"
             "A=M-1\n"
             "M=0\n"
-            "@Foo.0.END\n"
+            "@Foo.CMP.0.END\n"
             "0;JMP\n"
-            "(Foo.0.TRUE)\n"
+            "(Foo.CMP.0.TRUE)\n"
             "@SP\n"
             "A=M-1\n"
             "M=-1\n"
-            "(Foo.0.END)\n");
+            "(Foo.CMP.0.END)\n");
 }
 
 TEST(CodeWriterTest, WritesJLT) {
@@ -164,18 +164,18 @@ TEST(CodeWriterTest, WritesJLT) {
             "D=M\n"
             "A=A-1\n"
             "D=M-D\n"
-            "@Foo1.0.TRUE\n"
+            "@Foo1.CMP.0.TRUE\n"
             "D;JLT\n"
             "@SP\n"
             "A=M-1\n"
             "M=0\n"
-            "@Foo1.0.END\n"
+            "@Foo1.CMP.0.END\n"
             "0;JMP\n"
-            "(Foo1.0.TRUE)\n"
+            "(Foo1.CMP.0.TRUE)\n"
             "@SP\n"
             "A=M-1\n"
             "M=-1\n"
-            "(Foo1.0.END)\n");
+            "(Foo1.CMP.0.END)\n");
 }
 
 TEST(CodeWriterTest, RejectPopConstant) {

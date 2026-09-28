@@ -164,7 +164,7 @@ void CodeWriter::ArithmeticTowArgs() {
 }
 
 void CodeWriter::Comparison(std::string_view jump_mnemonic) {
-  std::string new_label = NewLabel();
+  std::string new_label = NewLabel("CMP");
   std::string true_label = absl::StrCat(new_label, ".TRUE");
   std::string end_label = absl::StrCat(new_label, ".END");
 
@@ -191,8 +191,8 @@ void CodeWriter::Comparison(std::string_view jump_mnemonic) {
           << "(" << end_label << ")\n";
 }
 
-std::string CodeWriter::NewLabel() {
-  std::string label = absl::StrCat(file_name_, ".", label_counter_);
+std::string CodeWriter::NewLabel(std::string_view kind) {
+  std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
   ++label_counter_;
   return label;
 }
