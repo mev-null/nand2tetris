@@ -34,22 +34,22 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
   }
   switch (*command.op) {
     case Operator::kAdd: {
-      ArithmeticTowArgs();
+      ArithmeticTwoArgs();
       output_ << "M=D+M\n";
       break;
     }
     case Operator::kSub: {
-      ArithmeticTowArgs();
+      ArithmeticTwoArgs();
       output_ << "M=M-D\n";
       break;
     }
     case Operator::kAnd: {
-      ArithmeticTowArgs();
+      ArithmeticTwoArgs();
       output_ << "M=D&M\n";
       break;
     }
     case Operator::kOr: {
-      ArithmeticTowArgs();
+      ArithmeticTwoArgs();
       output_ << "M=D|M\n";
       break;
     }
@@ -156,7 +156,7 @@ void CodeWriter::PopStackToR13Address() {
           << "M=D\n";
 }
 
-void CodeWriter::ArithmeticTowArgs() {
+void CodeWriter::ArithmeticTwoArgs() {
   output_ << "@SP\n"
           << "AM=M-1\n"
           << "D=M\n"
