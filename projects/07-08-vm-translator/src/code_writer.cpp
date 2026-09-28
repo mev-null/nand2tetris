@@ -33,50 +33,33 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
     return absl::InvalidArgumentError("arithmetic requires an operator");
   }
   switch (*command.op) {
-    case Operator::kAdd: {
-      ArithmeticTwoArgs();
-      output_ << "M=D+M\n";
+    case Operator::kAdd:
+      WriteBinary("D+M");
       break;
-    }
-    case Operator::kSub: {
-      ArithmeticTwoArgs();
-      output_ << "M=M-D\n";
+    case Operator::kSub:
+      WriteBinary("M-D");
       break;
-    }
-    case Operator::kAnd: {
-      ArithmeticTwoArgs();
-      output_ << "M=D&M\n";
+    case Operator::kAnd:
+      WriteBinary("D&M");
       break;
-    }
-    case Operator::kOr: {
-      ArithmeticTwoArgs();
-      output_ << "M=D|M\n";
+    case Operator::kOr:
+      WriteBinary("D|M");
       break;
-    }
-    case Operator::kNeg: {
-      output_ << "@SP\n"
-              << "A=M-1\n"
-              << "M=-M\n";
+    case Operator::kNeg:
+      WriteUnary("-M");
       break;
-    }
-    case Operator::kNot: {
-      output_ << "@SP\n"
-              << "A=M-1\n"
-              << "M=!M\n";
+    case Operator::kNot:
+      WriteUnary("!M");
       break;
-    }
-    case Operator::kEq: {
-      Comparison("JEQ");
+    case Operator::kEq:
+      WriteComparison("JEQ");
       break;
-    }
-    case Operator::kGt: {
-      Comparison("JGT");
+    case Operator::kGt:
+      WriteComparison("JGT");
       break;
-    }
-    case Operator::kLt: {
-      Comparison("JLT");
+    case Operator::kLt:
+      WriteComparison("JLT");
       break;
-    }
   }
   return absl::OkStatus();
 }
@@ -108,7 +91,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
         default:
           return absl::UnimplementedError("this segment is not implemented yet");
       }
-      PushDToStack();
+      WritePushD();
       return absl::OkStatus();
 
     case CommandType::kPop:
@@ -127,7 +110,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
         default:
           return absl::UnimplementedError("this segment is not implemented yet");
       }
-      PopStackToR13Address();
+      WritePopToR13Address();
       return absl::OkStatus();
 
     default:
@@ -135,7 +118,7 @@ absl::Status CodeWriter::WritePushPop(const Command& command) {
   }
 }
 
-void CodeWriter::PushDToStack() {
+void CodeWriter::WritePushD() {
   output_ << "@SP\n"
           << "A=M\n"
           << "M=D\n"
@@ -143,7 +126,7 @@ void CodeWriter::PushDToStack() {
           << "M=M+1\n";
 }
 
-void CodeWriter::PopStackToR13Address() {
+void CodeWriter::WritePopToR13Address() {
   output_ << "@SP\n"
           << "M=M-1\n"
           << "A=M\n"
@@ -153,14 +136,21 @@ void CodeWriter::PopStackToR13Address() {
           << "M=D\n";
 }
 
-void CodeWriter::ArithmeticTwoArgs() {
+void CodeWriter::WriteBinary(std::string_view comp) {
   output_ << "@SP\n"
           << "AM=M-1\n"
           << "D=M\n"
-          << "A=A-1\n";
+          << "A=A-1\n"
+          << "M=" << comp << "\n";
 }
 
-void CodeWriter::Comparison(std::string_view jump_mnemonic) {
+void CodeWriter::WriteUnary(std::string_view comp) {
+  output_ << "@SP\n"
+          << "A=M-1\n"
+          << "M=" << comp << "\n";
+}
+
+void CodeWriter::WriteComparison(std::string_view jump_mnemonic) {
   std::string new_label = NewLabel("CMP");
   std::string true_label = absl::StrCat(new_label, ".TRUE");
   std::string end_label = absl::StrCat(new_label, ".END");
