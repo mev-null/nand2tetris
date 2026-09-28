@@ -19,12 +19,14 @@ class CodeWriter {
 
  private:
   absl::Status WriteArithmetic(const Command& command);
-  absl::Status WritePushPop(const Command& command);
+  absl::Status WritePush(const Command& command);
+  absl::Status WritePop(const Command& command);
 
-  void PushDToStack();
-  void PopStackToR13Address();
-  void ArithmeticTwoArgs();
-  void Comparison(std::string_view jump_mnemonic);
+  void WritePushD();
+  void WritePopToR13Address();
+  void WriteBinary(std::string_view comp);
+  void WriteUnary(std::string_view comp);
+  void WriteComparison(std::string_view jump_mnemonic);
   std::string NewLabel(std::string_view kind);
 
   std::ostream& output_;

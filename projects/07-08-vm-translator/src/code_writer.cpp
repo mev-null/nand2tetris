@@ -15,8 +15,9 @@ absl::Status CodeWriter::WriteCommand(const Command& command) {
     case CommandType::kArithmetic:
       return WriteArithmetic(command);
     case CommandType::kPush:
+      return WritePush(command);
     case CommandType::kPop:
-      return WritePushPop(command);
+      return WritePop(command);
     default:
       return absl::UnimplementedError("command type is not translated yet");
   }
@@ -33,112 +34,93 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
     return absl::InvalidArgumentError("arithmetic requires an operator");
   }
   switch (*command.op) {
-    case Operator::kAdd: {
-      ArithmeticTwoArgs();
-      output_ << "M=D+M\n";
+    case Operator::kAdd:
+      WriteBinary("D+M");
       break;
-    }
-    case Operator::kSub: {
-      ArithmeticTwoArgs();
-      output_ << "M=M-D\n";
+    case Operator::kSub:
+      WriteBinary("M-D");
       break;
-    }
-    case Operator::kAnd: {
-      ArithmeticTwoArgs();
-      output_ << "M=D&M\n";
+    case Operator::kAnd:
+      WriteBinary("D&M");
       break;
-    }
-    case Operator::kOr: {
-      ArithmeticTwoArgs();
-      output_ << "M=D|M\n";
+    case Operator::kOr:
+      WriteBinary("D|M");
       break;
-    }
-    case Operator::kNeg: {
-      output_ << "@SP\n"
-              << "A=M-1\n"
-              << "M=-M\n";
+    case Operator::kNeg:
+      WriteUnary("-M");
       break;
-    }
-    case Operator::kNot: {
-      output_ << "@SP\n"
-              << "A=M-1\n"
-              << "M=!M\n";
+    case Operator::kNot:
+      WriteUnary("!M");
       break;
-    }
-    case Operator::kEq: {
-      Comparison("JEQ");
+    case Operator::kEq:
+      WriteComparison("JEQ");
       break;
-    }
-    case Operator::kGt: {
-      Comparison("JGT");
+    case Operator::kGt:
+      WriteComparison("JGT");
       break;
-    }
-    case Operator::kLt: {
-      Comparison("JLT");
+    case Operator::kLt:
+      WriteComparison("JLT");
       break;
-    }
-    default: {
-      return absl::UnimplementedError("This operator is not implemented yet");
-    }
   }
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePushPop(const Command& command) {
+absl::Status CodeWriter::WritePush(const Command& command) {
   if (!command.segment.has_value()) {
     return absl::InvalidArgumentError("push/pop requires a segment");
   }
   if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a index");
+    return absl::InvalidArgumentError("push/pop requires an index");
   }
-  switch (command.type) {
-    case CommandType::kPush:
-      switch (*command.segment) {
-        case Segment::kConstant: {
-          output_ << "@" << *command.arg2 << "\n"
-                  << "D=A\n";
-          break;
-        }
-        case Segment::kLocal: {
-          output_ << "@LCL\n"
-                  << "D=M\n"
-                  << "@" << *command.arg2 << "\n"
-                  << "D=D+A\n"
-                  << "A=D\n"
-                  << "D=M\n";
-          break;
-        }
-        default:
-          return absl::UnimplementedError("This segment is not implemented yet");
-      }
-      PushDToStack();
-      return absl::OkStatus();
-
-    case CommandType::kPop:
-      switch (*command.segment) {
-        case Segment::kLocal: {
-          output_ << "@LCL\n"
-                  << "D=M\n"
-                  << "@" << *command.arg2 << "\n"
-                  << "D=D+A\n"
-                  << "@R13\n"
-                  << "M=D\n";
-          break;
-        }
-        case Segment::kConstant:
-          return absl::InvalidArgumentError("cannot pop to constant segment");
-        default:
-          return absl::UnimplementedError("This segment is not implemented yet");
-      }
-      PopStackToR13Address();
-      return absl::OkStatus();
-
+  switch (*command.segment) {
+    case Segment::kConstant: {
+      output_ << "@" << *command.arg2 << "\n"
+              << "D=A\n";
+      break;
+    }
+    case Segment::kLocal: {
+      output_ << "@LCL\n"
+              << "D=M\n"
+              << "@" << *command.arg2 << "\n"
+              << "D=D+A\n"
+              << "A=D\n"
+              << "D=M\n";
+      break;
+    }
     default:
-      return absl::InvalidArgumentError("WritePushPop requires a push or pop command");
+      return absl::UnimplementedError("this segment is not implemented yet");
   }
+  WritePushD();
+  return absl::OkStatus();
 }
 
-void CodeWriter::PushDToStack() {
+absl::Status CodeWriter::WritePop(const Command& command) {
+  if (!command.segment.has_value()) {
+    return absl::InvalidArgumentError("push/pop requires a segment");
+  }
+  if (!command.arg2.has_value()) {
+    return absl::InvalidArgumentError("push/pop requires an index");
+  }
+  switch (*command.segment) {
+    case Segment::kLocal: {
+      output_ << "@LCL\n"
+              << "D=M\n"
+              << "@" << *command.arg2 << "\n"
+              << "D=D+A\n"
+              << "@R13\n"
+              << "M=D\n";
+      break;
+    }
+    case Segment::kConstant:
+      return absl::InvalidArgumentError("cannot pop to constant segment");
+    default:
+      return absl::UnimplementedError("this segment is not implemented yet");
+  }
+  WritePopToR13Address();
+  return absl::OkStatus();
+}
+
+void CodeWriter::WritePushD() {
   output_ << "@SP\n"
           << "A=M\n"
           << "M=D\n"
@@ -146,7 +128,7 @@ void CodeWriter::PushDToStack() {
           << "M=M+1\n";
 }
 
-void CodeWriter::PopStackToR13Address() {
+void CodeWriter::WritePopToR13Address() {
   output_ << "@SP\n"
           << "M=M-1\n"
           << "A=M\n"
@@ -156,14 +138,21 @@ void CodeWriter::PopStackToR13Address() {
           << "M=D\n";
 }
 
-void CodeWriter::ArithmeticTwoArgs() {
+void CodeWriter::WriteBinary(std::string_view comp) {
   output_ << "@SP\n"
           << "AM=M-1\n"
           << "D=M\n"
-          << "A=A-1\n";
+          << "A=A-1\n"
+          << "M=" << comp << "\n";
 }
 
-void CodeWriter::Comparison(std::string_view jump_mnemonic) {
+void CodeWriter::WriteUnary(std::string_view comp) {
+  output_ << "@SP\n"
+          << "A=M-1\n"
+          << "M=" << comp << "\n";
+}
+
+void CodeWriter::WriteComparison(std::string_view jump_mnemonic) {
   std::string new_label = NewLabel("CMP");
   std::string true_label = absl::StrCat(new_label, ".TRUE");
   std::string end_label = absl::StrCat(new_label, ".END");
