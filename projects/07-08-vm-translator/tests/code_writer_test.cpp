@@ -88,6 +88,96 @@ TEST(CodeWriterTest, WritesPopLocal) {
             "M=D\n");
 }
 
+TEST(CodeWriterTest, WritesJEQ) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kEq,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "D=M-D\n"
+            "@Foo.0.TRUE\n"
+            "D;JEQ\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=0\n"
+            "@Foo.0.END\n"
+            "0;JMP\n"
+            "(Foo.0.TRUE)\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=-1\n"
+            "(Foo.0.END)\n");
+}
+
+TEST(CodeWriterTest, WritesJGT) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kGt,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "D=M-D\n"
+            "@Foo.0.TRUE\n"
+            "D;JGT\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=0\n"
+            "@Foo.0.END\n"
+            "0;JMP\n"
+            "(Foo.0.TRUE)\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=-1\n"
+            "(Foo.0.END)\n");
+}
+
+TEST(CodeWriterTest, WritesJLT) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo1");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kArithmetic,
+                                   .op = Operator::kLt,
+                                   .arg1 = std::nullopt,
+                                   .segment = std::nullopt,
+                                   .arg2 = std::nullopt}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "A=A-1\n"
+            "D=M-D\n"
+            "@Foo1.0.TRUE\n"
+            "D;JLT\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=0\n"
+            "@Foo1.0.END\n"
+            "0;JMP\n"
+            "(Foo1.0.TRUE)\n"
+            "@SP\n"
+            "A=M-1\n"
+            "M=-1\n"
+            "(Foo1.0.END)\n");
+}
+
 TEST(CodeWriterTest, RejectPopConstant) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");
