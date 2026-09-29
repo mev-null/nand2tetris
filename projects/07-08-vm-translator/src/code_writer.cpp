@@ -90,6 +90,22 @@ absl::Status CodeWriter::WritePush(const Command& command) {
     case Segment::kThat:
       WritePushBaseAddress("THAT", *command.arg2);
       break;
+    case Segment::kTemp: {
+      int index = *command.arg2;
+      if ((index < 0) || (index > 7)) {
+        return absl::InvalidArgumentError("");
+      }
+      WritePushWithSymbol("TEMP", index);
+      return absl::OkStatus();
+    }
+    case Segment::kPointer: {
+      int index = *command.arg2;
+      if ((index != 0) && (index != 1)) {
+        return absl::InvalidArgumentError("");
+      }
+      WritePushWithSymbol("PTR", index);
+      return absl::OkStatus();
+    }
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
   }
@@ -119,6 +135,22 @@ absl::Status CodeWriter::WritePop(const Command& command) {
       break;
     case Segment::kConstant:
       return absl::InvalidArgumentError("cannot pop to constant segment");
+    case Segment::kTemp: {
+      int index = *command.arg2;
+      if ((index < 0) || (index > 7)) {
+        return absl::InvalidArgumentError("temp index expected 0 to 7");
+      }
+      WritePopWithSymbol("TEMP", index);
+      return absl::OkStatus();
+    }
+    case Segment::kPointer: {
+      int index = *command.arg2;
+      if ((index != 0) && (index != 1)) {
+        return absl::InvalidArgumentError("pointer indext expected 0 or 7");
+      }
+      WritePopWithSymbol("PTR", index);
+      return absl::OkStatus();
+    }
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
   }
@@ -204,10 +236,60 @@ void CodeWriter::WritePopBaseAddress(std::string_view comp, int index) {
           << "M=D\n";
 }
 
+void CodeWriter::WritePopWithSymbol(std::string_view comp, int index) {
+  std::string symbol;
+  if (comp == "TEMP") {
+    symbol = CreateSymbol(Segment::kTemp, index);
+  } else if (comp == "PTR") {
+    symbol = CreateSymbol(Segment::kPointer, index);
+  }
+  output_ << "@SP\n"
+          << "AM=M-1\n"
+          << "D=M\n"
+          << symbol << "\n"
+          << "M=D\n";
+}
+
+void CodeWriter::WritePushWithSymbol(std::string_view comp, int index) {
+  std::string symbol;
+  if (comp == "TEMP") {
+    symbol = CreateSymbol(Segment::kTemp, index);
+  } else if (comp == "PTR") {
+    symbol = CreateSymbol(Segment::kPointer, index);
+  }
+  output_ << symbol << "\n"
+          << "D=M\n"
+          << "@SP\n"
+          << "A=M\n"
+          << "M=D\n"
+          << "@SP\n"
+          << "M=M+1\n";
+}
+
 std::string CodeWriter::NewLabel(std::string_view kind) {
   std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
   ++label_counter_;
   return label;
+}
+
+std::string CodeWriter::CreateSymbol(Segment segment, int index) {
+  switch (segment) {
+    case Segment::kTemp: {
+      return absl::StrCat("@R", 5 + index);
+    }
+    case Segment::kPointer: {
+      switch (index) {
+        case 0:
+          return "@THIS";
+        case 1:
+          return "@THAT";
+        default:
+          return "";
+      }
+    }
+    default:
+      return "";
+  }
 }
 
 }  // namespace hack::vm

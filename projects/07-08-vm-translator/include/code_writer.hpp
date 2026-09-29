@@ -33,9 +33,12 @@ class CodeWriter {
   void WritePopToR13Address();
   void WritePushBaseAddress(std::string_view comp, int index);
   void WritePopBaseAddress(std::string_view comp, int index);
+  void WritePushWithSymbol(std::string_view comp, int index);
+  void WritePopWithSymbol(std::string_view comp, int index);
 
   // util
   std::string NewLabel(std::string_view kind);
+  std::string CreateSymbol(Segment segment, int index);
 
   std::ostream& output_;
   std::string file_name_;
