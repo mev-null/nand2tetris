@@ -35,9 +35,11 @@ class CodeWriter {
   void WritePopBaseAddress(std::string_view comp, int index);
   void WritePushWithSymbol(std::string_view comp, int index);
   void WritePopWithSymbol(std::string_view comp, int index);
+  void WritePopStatic(int index);
+  void WritePushStatic(int index);
 
   // util
-  std::string NewLabel(std::string_view kind);
+  std::string NewLabel(std::string_view kind, std::optional<int> index);
   std::string CreateSymbol(Segment segment, int index);
 
   std::ostream& output_;

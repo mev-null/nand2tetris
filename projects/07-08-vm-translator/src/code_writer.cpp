@@ -106,6 +106,9 @@ absl::Status CodeWriter::WritePush(const Command& command) {
       WritePushWithSymbol("PTR", index);
       return absl::OkStatus();
     }
+    case Segment::kStatic:
+      WritePushStatic(*command.arg2);
+      return absl::OkStatus();
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
   }
@@ -151,6 +154,9 @@ absl::Status CodeWriter::WritePop(const Command& command) {
       WritePopWithSymbol("PTR", index);
       return absl::OkStatus();
     }
+    case Segment::kStatic:
+      WritePopStatic(*command.arg2);
+      return absl::OkStatus();
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
   }
@@ -173,7 +179,7 @@ void CodeWriter::WriteUnary(std::string_view comp) {
 }
 
 void CodeWriter::WriteComparison(std::string_view jump_mnemonic) {
-  std::string new_label = NewLabel("CMP");
+  std::string new_label = NewLabel("CMP", std::nullopt);
   std::string true_label = absl::StrCat(new_label, ".TRUE");
   std::string end_label = absl::StrCat(new_label, ".END");
 
@@ -266,9 +272,36 @@ void CodeWriter::WritePushWithSymbol(std::string_view comp, int index) {
           << "M=M+1\n";
 }
 
-std::string CodeWriter::NewLabel(std::string_view kind) {
-  std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
-  ++label_counter_;
+void CodeWriter::WritePopStatic(int index) {
+  std::string new_label = NewLabel("STATIC", index);
+
+  output_ << "@SP\n"
+          << "AM=M-1\n"
+          << "D=M\n"
+          << "@" << new_label << "\n"
+          << "M=D\n";
+}
+
+void CodeWriter::WritePushStatic(int index) {
+  std::string new_label = NewLabel("STATIC", index);
+
+  output_ << "@" << new_label << "\n"
+          << "D=M\n"
+          << "@SP\n"
+          << "A=M\n"
+          << "M=D\n"
+          << "@SP\n"
+          << "M=M+1\n";
+}
+
+std::string CodeWriter::NewLabel(std::string_view kind, std::optional<int> index) {
+  std::string label;
+  if ((kind == "CMP") && !index) {
+    label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
+    ++label_counter_;
+  } else if ((kind == "STATIC") && index) {
+    label = absl::StrCat(file_name_, ".", *index);
+  }
   return label;
 }
 
