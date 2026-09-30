@@ -41,6 +41,14 @@ Command Pop(Segment segment, int index) {
           .arg2 = index};
 }
 
+TEST(CodeWriterTest, WritesSourceComment) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  writer.WriteSourceComment("push constant 7");
+  EXPECT_EQ(output.str(), "// push constant 7\n");
+}
+
 TEST(CodeWriterTest, WritesPushConstant) {
   std::ostringstream output;
   CodeWriter writer(output, "Foo");

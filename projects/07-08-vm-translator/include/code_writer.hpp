@@ -15,6 +15,7 @@ class CodeWriter {
   CodeWriter(std::ostream& output, const std::string& filename)
       : output_(output), file_name_(filename) {}
 
+  void WriteSourceComment(std::string_view line);
   absl::Status WriteCommand(const Command& command);
   void WriteInfiniteLoop();
 
