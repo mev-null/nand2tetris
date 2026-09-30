@@ -33,6 +33,7 @@ add_executable(
     vm_tests
     tests/parser_test.cpp
     tests/code_writer_test.cpp
+    tests/vm_translator_test.cpp
 )
 
 target_link_libraries(
