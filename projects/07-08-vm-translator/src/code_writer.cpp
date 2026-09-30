@@ -1,5 +1,6 @@
 #include "code_writer.hpp"
 
+#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
