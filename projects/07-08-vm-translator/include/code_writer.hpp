@@ -20,8 +20,8 @@ class CodeWriter {
  private:
   // gate for each commands
   absl::Status WriteArithmetic(const Command& command);
-  absl::Status WritePush(const Command& command);
-  absl::Status WritePop(const Command& command);
+  absl::Status WritePush(Segment segment, int index);
+  absl::Status WritePop(Segment segment, int index);
 
   // arithmetic helper
   void WriteBinary(std::string_view comp);

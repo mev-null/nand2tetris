@@ -16,9 +16,17 @@ absl::Status CodeWriter::WriteCommand(const Command& command) {
     case CommandType::kArithmetic:
       return WriteArithmetic(command);
     case CommandType::kPush:
-      return WritePush(command);
     case CommandType::kPop:
-      return WritePop(command);
+      if (!command.segment.has_value()) {
+        return absl::InvalidArgumentError("push/pop requires a segment");
+      }
+      if (!command.arg2.has_value()) {
+        return absl::InvalidArgumentError("push/pop requires an index");
+      }
+      if (command.type == CommandType::kPush) {
+        return WritePush(*command.segment, *command.arg2);
+      }
+      return WritePop(*command.segment, *command.arg2);
     default:
       return absl::UnimplementedError("command type is not translated yet");
   }
@@ -66,33 +74,26 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePush(const Command& command) {
-  if (!command.segment.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a segment");
-  }
-  if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires an index");
-  }
-  switch (*command.segment) {
+absl::Status CodeWriter::WritePush(Segment segment, int index) {
+  switch (segment) {
     case Segment::kConstant: {
-      output_ << "@" << *command.arg2 << "\n"
+      output_ << "@" << index << "\n"
               << "D=A\n";
       break;
     }
     case Segment::kLocal:
-      WritePushBaseAddress("LCL", *command.arg2);
+      WritePushBaseAddress("LCL", index);
       break;
     case Segment::kArgument:
-      WritePushBaseAddress("ARG", *command.arg2);
+      WritePushBaseAddress("ARG", index);
       break;
     case Segment::kThis:
-      WritePushBaseAddress("THIS", *command.arg2);
+      WritePushBaseAddress("THIS", index);
       break;
     case Segment::kThat:
-      WritePushBaseAddress("THAT", *command.arg2);
+      WritePushBaseAddress("THAT", index);
       break;
     case Segment::kTemp: {
-      int index = *command.arg2;
       if ((index < 0) || (index > 7)) {
         return absl::InvalidArgumentError("");
       }
@@ -100,7 +101,6 @@ absl::Status CodeWriter::WritePush(const Command& command) {
       return absl::OkStatus();
     }
     case Segment::kPointer: {
-      int index = *command.arg2;
       if ((index != 0) && (index != 1)) {
         return absl::InvalidArgumentError("");
       }
@@ -108,7 +108,7 @@ absl::Status CodeWriter::WritePush(const Command& command) {
       return absl::OkStatus();
     }
     case Segment::kStatic:
-      WritePushStatic(*command.arg2);
+      WritePushStatic(index);
       return absl::OkStatus();
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
@@ -117,30 +117,23 @@ absl::Status CodeWriter::WritePush(const Command& command) {
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePop(const Command& command) {
-  if (!command.segment.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a segment");
-  }
-  if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires an index");
-  }
-  switch (*command.segment) {
+absl::Status CodeWriter::WritePop(Segment segment, int index) {
+  switch (segment) {
     case Segment::kLocal:
-      WritePopBaseAddress("LCL", *command.arg2);
+      WritePopBaseAddress("LCL", index);
       break;
     case Segment::kArgument:
-      WritePopBaseAddress("ARG", *command.arg2);
+      WritePopBaseAddress("ARG", index);
       break;
     case Segment::kThis:
-      WritePopBaseAddress("THIS", *command.arg2);
+      WritePopBaseAddress("THIS", index);
       break;
     case Segment::kThat:
-      WritePopBaseAddress("THAT", *command.arg2);
+      WritePopBaseAddress("THAT", index);
       break;
     case Segment::kConstant:
       return absl::InvalidArgumentError("cannot pop to constant segment");
     case Segment::kTemp: {
-      int index = *command.arg2;
       if ((index < 0) || (index > 7)) {
         return absl::InvalidArgumentError("temp index expected 0 to 7");
       }
@@ -148,7 +141,6 @@ absl::Status CodeWriter::WritePop(const Command& command) {
       return absl::OkStatus();
     }
     case Segment::kPointer: {
-      int index = *command.arg2;
       if ((index != 0) && (index != 1)) {
         return absl::InvalidArgumentError("pointer indext expected 0 or 7");
       }
@@ -156,7 +148,7 @@ absl::Status CodeWriter::WritePop(const Command& command) {
       return absl::OkStatus();
     }
     case Segment::kStatic:
-      WritePopStatic(*command.arg2);
+      WritePopStatic(index);
       return absl::OkStatus();
     default:
       return absl::UnimplementedError("this segment is not implemented yet");
