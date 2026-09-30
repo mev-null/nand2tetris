@@ -2,6 +2,8 @@ add_library(
     vm_core
     src/parser.cpp
     src/code_writer.cpp
+    src/code_writer_arithmetic.cpp
+    src/code_writer_memory.cpp
     src/vm_translator.cpp
 )
 
@@ -33,6 +35,8 @@ add_executable(
     vm_tests
     tests/parser_test.cpp
     tests/code_writer_test.cpp
+    tests/code_writer_arithmetic_test.cpp
+    tests/code_writer_memory_test.cpp
     tests/vm_translator_test.cpp
 )
 
