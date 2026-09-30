@@ -1,11 +1,11 @@
 #include "code_writer.hpp"
 
-#include <optional>
 #include <ostream>
 #include <string>
 #include <string_view>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "command.hpp"
 
@@ -16,9 +16,17 @@ absl::Status CodeWriter::WriteCommand(const Command& command) {
     case CommandType::kArithmetic:
       return WriteArithmetic(command);
     case CommandType::kPush:
-      return WritePush(command);
     case CommandType::kPop:
-      return WritePop(command);
+      if (!command.segment.has_value()) {
+        return absl::InvalidArgumentError("push/pop requires a segment");
+      }
+      if (!command.arg2.has_value()) {
+        return absl::InvalidArgumentError("push/pop requires an index");
+      }
+      if (command.type == CommandType::kPush) {
+        return WritePush(*command.segment, *command.arg2);
+      }
+      return WritePop(*command.segment, *command.arg2);
     default:
       return absl::UnimplementedError("command type is not translated yet");
   }
@@ -66,100 +74,66 @@ absl::Status CodeWriter::WriteArithmetic(const Command& command) {
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePush(const Command& command) {
-  if (!command.segment.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a segment");
-  }
-  if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires an index");
-  }
-  switch (*command.segment) {
+absl::Status CodeWriter::WritePush(Segment segment, int index) {
+  switch (segment) {
     case Segment::kConstant: {
-      output_ << "@" << *command.arg2 << "\n"
+      output_ << "@" << index << "\n"
               << "D=A\n";
       break;
     }
     case Segment::kLocal:
-      WritePushBaseAddress("LCL", *command.arg2);
+      WritePushBaseAddress("LCL", index);
       break;
     case Segment::kArgument:
-      WritePushBaseAddress("ARG", *command.arg2);
+      WritePushBaseAddress("ARG", index);
       break;
     case Segment::kThis:
-      WritePushBaseAddress("THIS", *command.arg2);
+      WritePushBaseAddress("THIS", index);
       break;
     case Segment::kThat:
-      WritePushBaseAddress("THAT", *command.arg2);
+      WritePushBaseAddress("THAT", index);
       break;
-    case Segment::kTemp: {
-      int index = *command.arg2;
-      if ((index < 0) || (index > 7)) {
-        return absl::InvalidArgumentError("");
+    case Segment::kTemp:
+    case Segment::kPointer:
+    case Segment::kStatic: {
+      absl::StatusOr<std::string> symbol = CreateSymbol(segment, index);
+      if (!symbol.ok()) {
+        return symbol.status();
       }
-      WritePushWithSymbol("TEMP", index);
-      return absl::OkStatus();
+      WritePushSymbol(*symbol);
+      break;
     }
-    case Segment::kPointer: {
-      int index = *command.arg2;
-      if ((index != 0) && (index != 1)) {
-        return absl::InvalidArgumentError("");
-      }
-      WritePushWithSymbol("PTR", index);
-      return absl::OkStatus();
-    }
-    case Segment::kStatic:
-      WritePushStatic(*command.arg2);
-      return absl::OkStatus();
-    default:
-      return absl::UnimplementedError("this segment is not implemented yet");
   }
   WritePushD();
   return absl::OkStatus();
 }
 
-absl::Status CodeWriter::WritePop(const Command& command) {
-  if (!command.segment.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires a segment");
-  }
-  if (!command.arg2.has_value()) {
-    return absl::InvalidArgumentError("push/pop requires an index");
-  }
-  switch (*command.segment) {
+absl::Status CodeWriter::WritePop(Segment segment, int index) {
+  switch (segment) {
     case Segment::kLocal:
-      WritePopBaseAddress("LCL", *command.arg2);
+      WritePopBaseAddress("LCL", index);
       break;
     case Segment::kArgument:
-      WritePopBaseAddress("ARG", *command.arg2);
+      WritePopBaseAddress("ARG", index);
       break;
     case Segment::kThis:
-      WritePopBaseAddress("THIS", *command.arg2);
+      WritePopBaseAddress("THIS", index);
       break;
     case Segment::kThat:
-      WritePopBaseAddress("THAT", *command.arg2);
+      WritePopBaseAddress("THAT", index);
       break;
+    case Segment::kTemp:
+    case Segment::kPointer:
+    case Segment::kStatic: {
+      absl::StatusOr<std::string> symbol = CreateSymbol(segment, index);
+      if (!symbol.ok()) {
+        return symbol.status();
+      }
+      WritePopSymbol(*symbol);
+      return absl::OkStatus();
+    }
     case Segment::kConstant:
       return absl::InvalidArgumentError("cannot pop to constant segment");
-    case Segment::kTemp: {
-      int index = *command.arg2;
-      if ((index < 0) || (index > 7)) {
-        return absl::InvalidArgumentError("temp index expected 0 to 7");
-      }
-      WritePopWithSymbol("TEMP", index);
-      return absl::OkStatus();
-    }
-    case Segment::kPointer: {
-      int index = *command.arg2;
-      if ((index != 0) && (index != 1)) {
-        return absl::InvalidArgumentError("pointer indext expected 0 or 7");
-      }
-      WritePopWithSymbol("PTR", index);
-      return absl::OkStatus();
-    }
-    case Segment::kStatic:
-      WritePopStatic(*command.arg2);
-      return absl::OkStatus();
-    default:
-      return absl::UnimplementedError("this segment is not implemented yet");
   }
   WritePopToR13Address();
   return absl::OkStatus();
@@ -180,7 +154,7 @@ void CodeWriter::WriteUnary(std::string_view comp) {
 }
 
 void CodeWriter::WriteComparison(std::string_view jump_mnemonic) {
-  std::string new_label = NewLabel("CMP", std::nullopt);
+  std::string new_label = NewLabel("CMP");
   std::string true_label = absl::StrCat(new_label, ".TRUE");
   std::string end_label = absl::StrCat(new_label, ".END");
 
@@ -243,86 +217,48 @@ void CodeWriter::WritePopBaseAddress(std::string_view comp, int index) {
           << "M=D\n";
 }
 
-void CodeWriter::WritePopWithSymbol(std::string_view comp, int index) {
-  std::string symbol;
-  if (comp == "TEMP") {
-    symbol = CreateSymbol(Segment::kTemp, index);
-  } else if (comp == "PTR") {
-    symbol = CreateSymbol(Segment::kPointer, index);
-  }
+void CodeWriter::WritePushSymbol(std::string_view symbol) {
+  output_ << "@" << symbol << "\n"
+          << "D=M\n";
+}
+
+void CodeWriter::WritePopSymbol(std::string_view symbol) {
   output_ << "@SP\n"
           << "AM=M-1\n"
           << "D=M\n"
-          << symbol << "\n"
+          << "@" << symbol << "\n"
           << "M=D\n";
 }
 
-void CodeWriter::WritePushWithSymbol(std::string_view comp, int index) {
-  std::string symbol;
-  if (comp == "TEMP") {
-    symbol = CreateSymbol(Segment::kTemp, index);
-  } else if (comp == "PTR") {
-    symbol = CreateSymbol(Segment::kPointer, index);
-  }
-  output_ << symbol << "\n"
-          << "D=M\n"
-          << "@SP\n"
-          << "A=M\n"
-          << "M=D\n"
-          << "@SP\n"
-          << "M=M+1\n";
-}
-
-void CodeWriter::WritePopStatic(int index) {
-  std::string new_label = NewLabel("STATIC", index);
-
-  output_ << "@SP\n"
-          << "AM=M-1\n"
-          << "D=M\n"
-          << "@" << new_label << "\n"
-          << "M=D\n";
-}
-
-void CodeWriter::WritePushStatic(int index) {
-  std::string new_label = NewLabel("STATIC", index);
-
-  output_ << "@" << new_label << "\n"
-          << "D=M\n"
-          << "@SP\n"
-          << "A=M\n"
-          << "M=D\n"
-          << "@SP\n"
-          << "M=M+1\n";
-}
-
-std::string CodeWriter::NewLabel(std::string_view kind, std::optional<int> index) {
-  std::string label;
-  if ((kind == "CMP") && !index) {
-    label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
-    ++label_counter_;
-  } else if ((kind == "STATIC") && index) {
-    label = absl::StrCat(file_name_, ".", *index);
-  }
+std::string CodeWriter::NewLabel(std::string_view kind) {
+  std::string label = absl::StrCat(file_name_, ".", kind, ".", label_counter_);
+  ++label_counter_;
   return label;
 }
 
-std::string CodeWriter::CreateSymbol(Segment segment, int index) {
+absl::StatusOr<std::string> CodeWriter::CreateSymbol(Segment segment, int index) {
   switch (segment) {
     case Segment::kTemp: {
-      return absl::StrCat("@R", 5 + index);
+      if (index < 0 || index > 7) {
+        return absl::InvalidArgumentError(absl::StrCat("temp index out of range: ", index));
+      }
+      return absl::StrCat("R", 5 + index);
     }
     case Segment::kPointer: {
       switch (index) {
         case 0:
-          return "@THIS";
+          return "THIS";
         case 1:
-          return "@THAT";
+          return "THAT";
         default:
-          return "";
+          return absl::InvalidArgumentError(absl::StrCat("pointer index out of range: ", index));
       }
     }
+    case Segment::kStatic: {
+      return absl::StrCat(file_name_, ".", index);
+    }
     default:
-      return "";
+      return absl::InternalError("CreateSymbol requires temp, pointer, or static");
   }
 }
 
