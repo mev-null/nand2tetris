@@ -18,16 +18,29 @@ class CodeWriter {
   void WriteInfiniteLoop();
 
  private:
+  // gate for each commands
   absl::Status WriteArithmetic(const Command& command);
   absl::Status WritePush(const Command& command);
   absl::Status WritePop(const Command& command);
 
-  void WritePushD();
-  void WritePopToR13Address();
+  // arithmetic helper
   void WriteBinary(std::string_view comp);
   void WriteUnary(std::string_view comp);
   void WriteComparison(std::string_view jump_mnemonic);
-  std::string NewLabel(std::string_view kind);
+
+  // pop/push helper
+  void WritePushD();
+  void WritePopToR13Address();
+  void WritePushBaseAddress(std::string_view comp, int index);
+  void WritePopBaseAddress(std::string_view comp, int index);
+  void WritePushWithSymbol(std::string_view comp, int index);
+  void WritePopWithSymbol(std::string_view comp, int index);
+  void WritePopStatic(int index);
+  void WritePushStatic(int index);
+
+  // util
+  std::string NewLabel(std::string_view kind, std::optional<int> index);
+  std::string CreateSymbol(Segment segment, int index);
 
   std::ostream& output_;
   std::string file_name_;

@@ -342,5 +342,383 @@ TEST(CodeWriterTest, RejectArithmeticWithoutOp) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST(CodeWriterTest, WritesPushArgument) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kArgument,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- RAM[ARG + 2]
+            // SP <- SP+1
+            "@ARG\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "A=D\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopArgument) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kArgument,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[ARG + 2] <- RAM[SP-1]
+            // SP <- SP-1
+            "@ARG\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "@R13\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M-1\n"
+            "A=M\n"
+            "D=M\n"
+            "@R13\n"
+            "A=M\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, WritesPushThis) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kThis,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- RAM[THIS + 2]
+            // SP <- SP+1
+            "@THIS\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "A=D\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopThis) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kThis,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[THIS + 2] <- RAM[SP-1]
+            // SP <- SP-1
+            "@THIS\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "@R13\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M-1\n"
+            "A=M\n"
+            "D=M\n"
+            "@R13\n"
+            "A=M\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, WritesPushThat) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kThat,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- RAM[THAT + 2]
+            // SP <- SP+1
+            "@THAT\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "A=D\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopThat) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kThat,
+                                   .arg2 = 2}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[THAT + 2] <- RAM[SP-1]
+            // SP <- SP-1
+            "@THAT\n"
+            "D=M\n"
+            "@2\n"
+            "D=D+A\n"
+            "@R13\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M-1\n"
+            "A=M\n"
+            "D=M\n"
+            "@R13\n"
+            "A=M\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, WritesPushTemp) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kTemp,
+                                   .arg2 = 3}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- RAM[5 + 3]
+            // SP <- SP+1
+            "@R8\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopTemp) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kTemp,
+                                   .arg2 = 3}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // SP <- SP-1
+            // RAM[5 + 3] <- RAM[SP]
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "@R8\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, RejectPushTempOutOfRange) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kTemp,
+                                   .arg2 = 8}),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST(CodeWriterTest, RejectPopTempOutOfRange) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kTemp,
+                                   .arg2 = 8}),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST(CodeWriterTest, WritesPushPointer0) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 0}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- THIS
+            // SP <- SP+1
+            "@THIS\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopPointer0) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 0}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // SP <- SP-1
+            // THIS <- RAM[SP]
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "@THIS\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, WritesPushPointer1) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 1}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- THAT
+            // SP <- SP+1
+            "@THAT\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopPointer1) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 1}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // SP <- SP-1
+            // THAT <- RAM[SP]
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "@THAT\n"
+            "M=D\n");
+}
+
+TEST(CodeWriterTest, RejectPushPointerOutOfRange) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 2}),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST(CodeWriterTest, RejectPopPointerOutOfRange) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kPointer,
+                                   .arg2 = 2}),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST(CodeWriterTest, WritesPushStatic) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPush,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kStatic,
+                                   .arg2 = 3}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // RAM[SP] <- Foo.3
+            // SP <- SP+1
+            "@Foo.3\n"
+            "D=M\n"
+            "@SP\n"
+            "A=M\n"
+            "M=D\n"
+            "@SP\n"
+            "M=M+1\n");
+}
+
+TEST(CodeWriterTest, WritesPopStatic) {
+  std::ostringstream output;
+  CodeWriter writer(output, "Foo");
+
+  EXPECT_THAT(writer.WriteCommand({.type = CommandType::kPop,
+                                   .op = std::nullopt,
+                                   .arg1 = std::nullopt,
+                                   .segment = Segment::kStatic,
+                                   .arg2 = 3}),
+              IsOk());
+  EXPECT_EQ(output.str(),
+            // SP <- SP-1
+            // Foo.3 <- RAM[SP]
+            "@SP\n"
+            "AM=M-1\n"
+            "D=M\n"
+            "@Foo.3\n"
+            "M=D\n");
+}
+
 }  // namespace
 }  // namespace hack::vm
