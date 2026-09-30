@@ -11,6 +11,8 @@
 
 namespace hack::vm {
 
+void CodeWriter::WriteSourceComment(std::string_view line) { output_ << "// " << line << "\n"; }
+
 absl::Status CodeWriter::WriteCommand(const Command& command) {
   switch (command.type) {
     case CommandType::kArithmetic:
