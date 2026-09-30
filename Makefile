@@ -3,6 +3,8 @@ RUNNER := $(PYTHON) scripts/run_tst.py
 ASSEMBLER := build/debug/projects/06-assembler/hack_assembler
 VM_TRANSLATOR := build/debug/projects/07-08-vm-translator/vm_translator
 CLANG_TIDY ?= $(or $(shell command -v clang-tidy),$(wildcard /opt/homebrew/opt/llvm/bin/clang-tidy),clang-tidy)
+# Acceptance tests CI runs; extend as chapters are translated.
+CI_ACCEPTANCE := ^Translate\.(StackArithmetic|MemoryAccess)\.
 SDKROOT_ARG := $(if $(shell command -v xcrun),--extra-arg=-isysroot$(shell xcrun --show-sdk-path))
 
 .PHONY: help
@@ -19,6 +21,7 @@ help:
 	@echo "make fmt-check      Fail if any C++ source under projects/ is not clang-formatted"
 	@echo "make tidy           Run clang-tidy over the C++ sources under projects/"
 	@echo "make lint           Run fmt-check and tidy, as the CI lint job does"
+	@echo "make test-accept    Run the acceptance tests CI runs (CI_ACCEPTANCE)"
 	@echo "make ci             Run the CI jobs locally: lint, build, the unit tests, and the acceptance tests CI runs"
 	@echo "make clean          Remove the build directory and the generated .out, .hack, and translated .asm files"
 
@@ -81,7 +84,11 @@ lint: fmt-check tidy
 .PHONY: ci
 ci: lint build
 	ctest --preset debug --exclude-regex '^Translate\.'
-	ctest --preset debug --tests-regex '^Translate\.(StackArithmetic|MemoryAccess)\.'
+	ctest --preset debug --tests-regex '$(CI_ACCEPTANCE)'
+
+.PHONY: test-accept
+test-accept: build
+	ctest --preset debug --tests-regex '$(CI_ACCEPTANCE)'
 
 .PHONY: clean
 clean:
