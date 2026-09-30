@@ -103,8 +103,6 @@ absl::Status CodeWriter::WritePush(Segment segment, int index) {
       WritePushSymbol(*symbol);
       break;
     }
-    default:
-      return absl::UnimplementedError("this segment is not implemented yet");
   }
   WritePushD();
   return absl::OkStatus();
@@ -124,8 +122,6 @@ absl::Status CodeWriter::WritePop(Segment segment, int index) {
     case Segment::kThat:
       WritePopBaseAddress("THAT", index);
       break;
-    case Segment::kConstant:
-      return absl::InvalidArgumentError("cannot pop to constant segment");
     case Segment::kTemp:
     case Segment::kPointer:
     case Segment::kStatic: {
@@ -136,8 +132,8 @@ absl::Status CodeWriter::WritePop(Segment segment, int index) {
       WritePopSymbol(*symbol);
       return absl::OkStatus();
     }
-    default:
-      return absl::UnimplementedError("this segment is not implemented yet");
+    case Segment::kConstant:
+      return absl::InvalidArgumentError("cannot pop to constant segment");
   }
   WritePopToR13Address();
   return absl::OkStatus();
