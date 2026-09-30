@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "command.hpp"
 
 namespace hack::vm {
@@ -33,14 +34,12 @@ class CodeWriter {
   void WritePopToR13Address();
   void WritePushBaseAddress(std::string_view comp, int index);
   void WritePopBaseAddress(std::string_view comp, int index);
-  void WritePushWithSymbol(std::string_view comp, int index);
-  void WritePopWithSymbol(std::string_view comp, int index);
-  void WritePopStatic(int index);
-  void WritePushStatic(int index);
+  void WritePushSymbol(std::string_view symbol);
+  void WritePopSymbol(std::string_view symbol);
 
   // util
-  std::string NewLabel(std::string_view kind, std::optional<int> index);
-  std::string CreateSymbol(Segment segment, int index);
+  std::string NewLabel(std::string_view kind);
+  absl::StatusOr<std::string> CreateSymbol(Segment segment, int index);
 
   std::ostream& output_;
   std::string file_name_;
