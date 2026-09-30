@@ -45,6 +45,7 @@ absl::Status TranslateFile(const std::filesystem::path& input_path,
     if (processed_line.empty()) {
       continue;
     }
+    writer.WriteSourceComment(processed_line);
     absl::StatusOr<Command> command = ParseCommand(processed_line);
     if (!command.ok()) {
       return WithLocation(command.status(), input_path, line_number);
